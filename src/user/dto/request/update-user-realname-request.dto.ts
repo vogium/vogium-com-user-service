@@ -1,6 +1,11 @@
-import { IsString } from 'class-validator';
+import { IsNotEmpty, IsString } from 'class-validator';
 
-export class updateUserRealnameRequestDTO {
+export class UpdateUserRealnameRequestDTO {
   @IsString()
+  @IsNotEmpty()
   realname: string;
+
+  @IsString()
+  @IsNotEmpty()
+  authId: string;
 }

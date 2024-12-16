@@ -1,13 +1,23 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { FirebaseService } from 'src/firebase/firebase.service';
 import { getUserByEmailRequestDTO } from './dto/request/get-user-by-email-request.dto';
 import { UserDTO } from './dto/user.dto';
 import { UtilService } from 'src/util/util.service';
 import { FieldParams } from 'src/firebase/dto/request-field-params.dto';
 import { getAllUsersResponseDTO } from './dto/response/get-all-users-response.dto';
-import { updateUserRequestDTO } from './dto/request/update-user-request.dto';
 import { AccountType } from 'src/enum/account-type.enum';
-import { AccountStatus } from 'src/enum/account-status.enum';
+import { FieldValue } from 'firebase-admin/firestore';
+import {
+  FIREBASE_ERROR_MESSAGES,
+  LOCAL_RETURN_QUERY_TYPES,
+} from 'src/contants/firebase.constants';
+import { UpdateUserStatusRequestDTO } from './dto/request/update-user-user-status-request.dto';
+import { UpdateUserTypeRequestDTO } from './dto/request/update-user-user-type-request.dto';
+import { UpdateUserAccountStatusRequestDTO } from './dto/request/update-user-account-status-request.dto';
+import { UpdateUserAccountTypeRequestDTO } from './dto/request/update-user-account-type-request.dto';
+import { UpdateUserRealnameRequestDTO } from './dto/request/update-user-realname-request.dto';
+import { UpdateUserUsernameRequestDTO } from './dto/request/update-user-username-request.dto';
+import { UpdateUserBanRequestDTO } from './dto/request/update-user-user-ban-request.dto';
 
 @Injectable()
 export class UserService {
@@ -40,62 +50,94 @@ export class UserService {
     // );
   }
 
-  public async updateUser(
-    authId: string,
-    userData: Partial<updateUserRequestDTO>,
-  ) {
-    const firebaseResponse =
-      await this.firebaseService.updateUserInUsersCollection<updateUserRequestDTO>(
-        authId,
-        userData,
-      );
+  public async updateUsername(request: UpdateUserUsernameRequestDTO) {
+    // to check user is valid or not manually
+    const {} = await this.getUserFromFirestore(request.authId);
 
-    return firebaseResponse;
-  }
-
-  public async updateSetUsername(authId: string, username: string) {
-    const firebaseResponse = await this.firebaseService.updateSetUsername(
-      authId,
-      username,
-    );
-    return firebaseResponse;
-  }
-
-  public async updateUsername(authId: string, username: string) {
     const firebaseResponse = await this.firebaseService.updateUsername(
-      authId,
-      username,
+      request.authId,
+      request.username,
     );
     return firebaseResponse;
   }
 
-  public async updateRealname(authId: string, realname: string) {
+  public async updateRealname(request: UpdateUserRealnameRequestDTO) {
+    const {} = await this.getUserFromFirestore(request.authId);
+
     const firebaseResponse = await this.firebaseService.updateRealname(
-      authId,
-      realname,
+      request.authId,
+      request.realname,
     );
     return firebaseResponse;
   }
 
   // accountType is an integer, therefore need to a key value pair
-  public async updateAccountType(authId: string, accountType: AccountType) {
-    const firebaseResponse =
-      await this.firebaseService.updateUserInUsersCollection<AccountType>(
-        authId,
-        { accountType: accountType },
-      );
-    return firebaseResponse;
+  public async updateAccountType(request: UpdateUserAccountTypeRequestDTO) {
+    const { firebaseResponse, user } = await this.getUserFromFirestore(
+      request.authId,
+    );
+
+    user.accountType = request.accountType;
+    return await this.firebaseService.updateField(firebaseResponse, user);
   }
 
-  public async updateAccountStatus(
-    authId: string,
-    accountStatus: AccountStatus,
-  ) {
-    const firebaseResponse =
-      await this.firebaseService.updateUserInUsersCollection<AccountStatus>(
-        authId,
-        { accountStatus: accountStatus },
-      );
-    return firebaseResponse;
+  public async updateAccountStatus(request: UpdateUserAccountStatusRequestDTO) {
+    const { firebaseResponse, user } = await this.getUserFromFirestore(
+      request.authId,
+    );
+
+    user.accountStatus = request.accountStatus;
+    return await this.firebaseService.updateField(firebaseResponse, user);
+  }
+
+  public async updateUserType(request: UpdateUserTypeRequestDTO) {
+    const { firebaseResponse, user } = await this.getUserFromFirestore(
+      request.authId,
+    );
+
+    user.userType = request.userType;
+    return await this.firebaseService.updateField(firebaseResponse, user);
+  }
+
+  public async updateUserStatus(request: UpdateUserStatusRequestDTO) {
+    const { firebaseResponse, user } = await this.getUserFromFirestore(
+      request.authId,
+    );
+
+    user.userStatus = request.userStatus;
+    return await this.firebaseService.updateField(firebaseResponse, user);
+  }
+
+  public async updateUserBan(request: UpdateUserBanRequestDTO) {
+    const { firebaseResponse, user } = await this.getUserFromFirestore(
+      request.authId,
+    );
+
+    user.isBanned = request.isBanned;
+    user.banDate = request.isBanned ? FieldValue.serverTimestamp() : null;
+    //todo maybe iso can be send and then parse it to timestamp...
+    user.expireBanDate = request.isBanned ? request.expireBanDate : null;
+    user.accountType = request.isBanned ? AccountType.user : user.accountType;
+    return await this.firebaseService.updateField(firebaseResponse, user);
+  }
+
+  private async getUserFromFirestore(authId: string) {
+    const firebaseResponse = await this.firebaseService.getUserByQuery({
+      field: 'authId',
+      operator: '==',
+      value: authId,
+    });
+
+    if (!firebaseResponse) {
+      throw new NotFoundException('firebase response not found');
+    }
+
+    if (firebaseResponse.type !== LOCAL_RETURN_QUERY_TYPES.SINGLE_RECORD) {
+      throw new NotFoundException(FIREBASE_ERROR_MESSAGES.USER_NOT_FOUND);
+    }
+    return {
+      firebaseResponse: firebaseResponse.data,
+      user: firebaseResponse.data.data(),
+    };
   }
 }
