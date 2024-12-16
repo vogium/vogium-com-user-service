@@ -9,10 +9,14 @@ import { updateUserRequestDTO } from './dto/request/update-user-request.dto';
 import { UpdateUserFrozenRequestDTO } from './dto/request/update-user-frozen-request.dto';
 import { DocumentData, FieldValue } from 'firebase-admin/firestore';
 import { UpdateUserAboutDto } from './dto/request/update-user-about-dto';
-import { UpdateUserAvatarUrlDTO } from './dto/request/update-user-avatar-url-dto';
+import { UpdateUserAvatarUrlRequestDTO } from './dto/request/update-user-avatar-url-request.dto';
 import { AccountType } from 'src/enum/account-type.enum';
 import { AccountStatus } from 'src/enum/account-status.enum';
 import { LOCAL_RETURN_QUERY_TYPES, FIREBASE_ERROR_MESSAGES } from 'src/contants/firebase.constants';
+import { UpdateUserEmailRequestDTO } from './dto/request/update-user-email-request.dto';
+import { UpdateUserGenderRequestDTO } from './dto/request/update-user-gender-request.dto';
+import { UpdateUserIsAccountVerifiedRequestDTO } from './dto/request/update-user-is-account-verified-request-dto';
+import { access } from 'fs';
 
 @Injectable()
 export class UserService {
@@ -111,7 +115,7 @@ export class UserService {
     const {authId, isFrozen} = request;
     const {firebaseResponse, user} = (await this.getUserFromFirestore(authId));
     user.isFrozen = isFrozen;
-    user.frozeDate = FieldValue.serverTimestamp();
+    user.frozenDate = FieldValue.serverTimestamp();
     return await this.firebaseService.updateField(firebaseResponse, user);
   }
 
@@ -126,11 +130,42 @@ export class UserService {
   }
 
   public async updateUserAvatar(
-    request: UpdateUserAvatarUrlDTO,
+    request: UpdateUserAvatarUrlRequestDTO,
   ): Promise<UserDTO> {
     const {authId, avatarUrl} = request;
     const {firebaseResponse, user} = (await this.getUserFromFirestore(authId));
     user.avatarUrl = avatarUrl;
+    return await this.firebaseService.updateField(firebaseResponse, user);
+  }
+
+  public async updateUserEmail(
+    request: UpdateUserEmailRequestDTO,
+  ): Promise<UserDTO> {
+    const {authId, emailAddress} = request;
+    const {firebaseResponse, user} = (await this.getUserFromFirestore(authId));
+    user.emailAddress = emailAddress;
+    return await this.firebaseService.updateField(firebaseResponse, user);
+  }
+
+  public async updateUserGender(
+    request: UpdateUserGenderRequestDTO,
+  ): Promise<UserDTO> {
+    const {authId, sex} = request;
+    const {firebaseResponse, user} = (await this.getUserFromFirestore(authId));
+    user.sex = sex;
+    return await this.firebaseService.updateField(firebaseResponse, user);
+  }
+
+  public async verifyUserAccount(
+    request: UpdateUserIsAccountVerifiedRequestDTO,
+  ): Promise<UserDTO> {
+    const {authId, isAccountVerified} = request;
+    const {firebaseResponse, user} = (await this.getUserFromFirestore(authId));
+    user.isAccountVerified = isAccountVerified;
+    
+    if(isAccountVerified === true){
+    user.accountVerifiedDate = FieldValue.serverTimestamp();
+    }
     return await this.firebaseService.updateField(firebaseResponse, user);
   }
 

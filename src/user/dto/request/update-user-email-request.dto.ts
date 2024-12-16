@@ -1,12 +1,12 @@
 import { IsNotEmpty } from "class-validator";
 
-export class UpdateUserAvatarUrlDTO{
+export class UpdateUserEmailRequestDTO{
 
     @IsNotEmpty()
     private _authId: string;
 
     @IsNotEmpty()
-    private _avatarUrl: string;
+    private _emailAddress: string;
 
     public get authId(): string {
         return this._authId;
@@ -15,11 +15,11 @@ export class UpdateUserAvatarUrlDTO{
         this._authId = value;
     }
     
-    public get avatarUrl(): string {
-        return this._avatarUrl;
+    public get emailAddress(): string {
+        return this._emailAddress;
     }
-    public set avatarUrl(value: string) {
-        this._avatarUrl = value;
+    public set emailAddress(value: string) {
+        this._emailAddress = value;
     }
 
 }

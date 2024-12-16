@@ -7,12 +7,15 @@ import { getAllUsersByFieldRequestDTO } from './dto/request/get-all-users-by-par
 import { getAllUsersResponseDTO } from './dto/response/get-all-users-response.dto';
 import { UpdateUserFrozenRequestDTO } from './dto/request/update-user-frozen-request.dto';
 import { UpdateUserAboutDto } from './dto/request/update-user-about-dto';
-import { UpdateUserAvatarUrlDTO } from './dto/request/update-user-avatar-url-dto';
+import { UpdateUserAvatarUrlRequestDTO } from './dto/request/update-user-avatar-url-request.dto';
 import { updateSetUserUsernameRequestDTO } from './dto/request/update-user-set-username-request.dto';
 import { updateUserUsernameRequestDTO } from './dto/request/update-user-username-request.dto';
 import { updateUserRealnameRequestDTO } from './dto/request/update-user-realname-request.dto';
 import { updateUserAccountTypeRequestDTO } from './dto/request/update-user-account-type-request.dto';
 import { updateUserAccountStatusRequestDTO } from './dto/request/update-user-account-status-request.dto';
+import { UpdateUserEmailRequestDTO } from './dto/request/update-user-email-request.dto';
+import { UpdateUserGenderRequestDTO } from './dto/request/update-user-gender-request.dto';
+import { UpdateUserIsAccountVerifiedRequestDTO } from './dto/request/update-user-is-account-verified-request-dto';
 
 @Controller('user')
 export class UserController {
@@ -49,7 +52,7 @@ export class UserController {
 
   @Put('/update/userAvatarUrl')
   public async updateUserAvatarUrl(
-    @Body() request: UpdateUserAvatarUrlDTO,
+    @Body() request: UpdateUserAvatarUrlRequestDTO,
   ) {
     return await this.userService.updateUserAvatar(request);
   }
@@ -108,5 +111,26 @@ export class UserController {
       authId,
       userData.accountStatus,
     );
+  }
+
+  @Put('/update/userEmailAddress')
+  public async updateUserEmail(
+    @Body() request: UpdateUserEmailRequestDTO,
+  ) {
+    return await this.userService.updateUserEmail(request);
+  }
+
+  @Put('/update/userGender')
+  public async updateUserGenderUrl(
+    @Body() request: UpdateUserGenderRequestDTO,
+  ) {
+    return await this.userService.updateUserGender(request);
+  }
+
+  @Put('/update/verifyUserAccount')
+  public async updateUserAccountVerified(
+    @Body() request: UpdateUserIsAccountVerifiedRequestDTO,
+  ) {
+    return await this.userService.verifyUserAccount(request);
   }
 }
