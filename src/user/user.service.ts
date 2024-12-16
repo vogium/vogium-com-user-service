@@ -12,6 +12,7 @@ import { UpdateUserAboutDto } from './dto/request/update-user-about-dto';
 import { UpdateUserAvatarUrlDTO } from './dto/request/update-user-avatar-url-dto';
 import { AccountType } from 'src/enum/account-type.enum';
 import { AccountStatus } from 'src/enum/account-status.enum';
+import { LOCAL_RETURN_QUERY_TYPES, FIREBASE_ERROR_MESSAGES } from 'src/contants/firebase.constants';
 
 @Injectable()
 export class UserService {
@@ -28,8 +29,6 @@ export class UserService {
     )) as UserDTO;
     // return await this.utilService.mapToDto(firebaseResponse, UserDTO);
     return firebaseResponse as UserDTO;
-    );
-    return await this.utilService.mapToDto(firebaseResponse, UserDTO);
   }
   
 
@@ -136,9 +135,16 @@ export class UserService {
   }
 
   private async getUserFromFirestore(authId: string){
-    const firebaseResponse = await this.firebaseService.getUserByQuery(
+    const types = await this.firebaseService.getUserByQuery(
       {field: 'authId', operator: '==', value: authId}
     );
+    if(!types){
+      throw new NotFoundException('types response not found');
+    }
+    if (types.type !== LOCAL_RETURN_QUERY_TYPES.SINGLE_RECORD) {
+      throw new NotFoundException(FIREBASE_ERROR_MESSAGES.USER_NOT_FOUND);
+    }
+    const firebaseResponse = types.data;
     if(!firebaseResponse){
       throw new NotFoundException('firebase response not found');
     }

@@ -1,6 +1,11 @@
+import { IsNotEmpty } from "class-validator";
+
 export class UpdateUserAvatarUrlDTO{
+
+    @IsNotEmpty()
     private _authId: string;
 
+    @IsNotEmpty()
     private _avatarUrl: string;
 
     public get authId(): string {

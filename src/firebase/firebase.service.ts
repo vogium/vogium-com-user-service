@@ -384,7 +384,7 @@ export class FirebaseService implements OnModuleInit {
     queryParams: FieldParams,
     throwErrorOnEmpty = true,
     throwErrorOnMultiple = true,
-  ): Promise<{ type: string; data: DocumentData | DocumentData[] }> {
+  ): Promise<{ type: string; data: any}> {
     try {
       const collectionRef = admin
         .firestore()
@@ -422,7 +422,7 @@ export class FirebaseService implements OnModuleInit {
 
       return {
         type: LOCAL_RETURN_QUERY.TYPES.SINGLE_RECORD,
-        data: snapshot.docs[0].data(),
+        data: snapshot.docs[0],
       };
     } catch (error) {
       if (error instanceof HttpException) {
