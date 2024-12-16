@@ -10,6 +10,8 @@ import { UpdateUserFrozenRequestDTO } from './dto/request/update-user-frozen-req
 import { DocumentData, FieldValue } from 'firebase-admin/firestore';
 import { UpdateUserAboutDto } from './dto/request/update-user-about-dto';
 import { UpdateUserAvatarUrlDTO } from './dto/request/update-user-avatar-url-dto';
+import { AccountType } from 'src/enum/account-type.enum';
+import { AccountStatus } from 'src/enum/account-status.enum';
 
 @Injectable()
 export class UserService {
@@ -21,8 +23,11 @@ export class UserService {
   public async getUserByEmail(
     request: getUserByEmailRequestDTO,
   ): Promise<UserDTO> {
-    const firebaseResponse = await this.firebaseService.getUserByEmail(
+    const firebaseResponse = (await this.firebaseService.getUserByEmail(
       request.email,
+    )) as UserDTO;
+    // return await this.utilService.mapToDto(firebaseResponse, UserDTO);
+    return firebaseResponse as UserDTO;
     );
     return await this.utilService.mapToDto(firebaseResponse, UserDTO);
   }
@@ -34,20 +39,70 @@ export class UserService {
     const firebaseResponse =
       await this.firebaseService.getAllUsers(fieldParams);
 
-    return await this.utilService.mapToDtoArray<getAllUsersResponseDTO>(
-      firebaseResponse,
-      getAllUsersResponseDTO,
-    );
+    return firebaseResponse as getAllUsersResponseDTO[];
+
+    // return await this.utilService.mapToDtoArray<getAllUsersResponseDTO>(
+    //   firebaseResponse,
+    //   getAllUsersResponseDTO,
+    // );
   }
 
   public async updateUser(
     authId: string,
     userData: Partial<updateUserRequestDTO>,
   ) {
-    const firebaseResponse = await this.firebaseService.updateUser(
+    const firebaseResponse =
+      await this.firebaseService.updateUserInUsersCollection<updateUserRequestDTO>(
+        authId,
+        userData,
+      );
+
+    return firebaseResponse;
+  }
+
+  public async updateSetUsername(authId: string, username: string) {
+    const firebaseResponse = await this.firebaseService.updateSetUsername(
       authId,
-      userData,
+      username,
     );
+    return firebaseResponse;
+  }
+
+  public async updateUsername(authId: string, username: string) {
+    const firebaseResponse = await this.firebaseService.updateUsername(
+      authId,
+      username,
+    );
+    return firebaseResponse;
+  }
+
+  public async updateRealname(authId: string, realname: string) {
+    const firebaseResponse = await this.firebaseService.updateRealname(
+      authId,
+      realname,
+    );
+    return firebaseResponse;
+  }
+
+  // accountType is an integer, therefore need to a key value pair
+  public async updateAccountType(authId: string, accountType: AccountType) {
+    const firebaseResponse =
+      await this.firebaseService.updateUserInUsersCollection<AccountType>(
+        authId,
+        { accountType: accountType },
+      );
+    return firebaseResponse;
+  }
+
+  public async updateAccountStatus(
+    authId: string,
+    accountStatus: AccountStatus,
+  ) {
+    const firebaseResponse =
+      await this.firebaseService.updateUserInUsersCollection<AccountStatus>(
+        authId,
+        { accountStatus: accountStatus },
+      );
     return firebaseResponse;
   }
 

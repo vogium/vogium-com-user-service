@@ -1,5 +1,10 @@
-
-import { IsOptional, IsString, IsBoolean, IsInt, IsEmail} from 'class-validator';
+import {
+  IsOptional,
+  IsString,
+  IsBoolean,
+  IsInt,
+  IsEmail,
+} from 'class-validator';
 import { Timestamp } from 'firebase/firestore';
 
 export enum AccountType {
@@ -48,8 +53,8 @@ export class UserDTO {
   @IsString({ each: true })
   notificationIds?: string[];
 
-  @IsInt()
-  authType: number;
+  // @IsInt()
+  // authType: number;
 
   @IsEmail()
   emailAddress: string;
@@ -193,28 +198,28 @@ export class UserDTO {
   birthDate?: Timestamp;
 
   @IsOptional()
-  banDate?:Timestamp;
+  banDate?: Timestamp;
 
   @IsOptional()
-  expireBanDate?:Timestamp;
+  expireBanDate?: Timestamp;
 
   @IsOptional()
-  deleteDate?:Timestamp;
+  deleteDate?: Timestamp;
 
   @IsOptional()
-  frozenDate?:Timestamp;
+  frozenDate?: Timestamp;
 
   @IsOptional()
-  lastLoginDate?:Timestamp;
+  lastLoginDate?: Timestamp;
 
   @IsOptional()
-  lastLogoutDate?:Timestamp;
+  lastLogoutDate?: Timestamp;
 
   @IsOptional()
-  usernameChangedDate?:Timestamp;
+  usernameChangedDate?: Timestamp;
 
   @IsOptional()
-  accountVerifiedDate?:Timestamp;
+  accountVerifiedDate?: Timestamp;
 
   @IsOptional()
   isFollowing: boolean = false;
