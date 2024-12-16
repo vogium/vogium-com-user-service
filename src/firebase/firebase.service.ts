@@ -15,6 +15,7 @@ import {
   COLLECTION_NAME,
   FIREBASE_ERROR_MESSAGES,
 } from 'src/contants/firebase.constants';
+import { UserMetadata } from 'firebase-admin/lib/auth/user-record';
 
 @Injectable()
 export class FirebaseService implements OnModuleInit {
@@ -33,7 +34,7 @@ export class FirebaseService implements OnModuleInit {
     return users;
   }
 
-  async updateUser(authId: string, userData: Partial<updateUserRequestDTO>) {
+  async updateUser(authId: string, userData: any) {
     const userDoc = await this.getUserByAuthId(authId);
 
     const dataNew = JSON.parse(JSON.stringify(userData));
@@ -92,8 +93,7 @@ export class FirebaseService implements OnModuleInit {
           FIREBASE_ERROR_MESSAGES.MULTIPLE_USERS,
         );
       }
-
-      return snapshot.docs[0].data();
+      return snapshot.docs[0];
     } catch (error) {
       if (error instanceof HttpException) {
         throw error;
@@ -104,6 +104,10 @@ export class FirebaseService implements OnModuleInit {
         error: error.message,
       });
     }
+  }
+
+  async updateField(userDoc: DocumentData, userData: any){
+    return await userDoc.ref.update(userData);
   }
 
   async getUsersByQuery(queryParams: FieldParams[]): Promise<DocumentData[]> {
@@ -139,7 +143,7 @@ export class FirebaseService implements OnModuleInit {
   }
 
   async getUserByAuthId(authId: string): Promise<DocumentData> {
-    const user = this.getUserByQuery({
+    const user = await this.getUserByQuery({
       field: 'authId',
       operator: '==',
       value: authId,
