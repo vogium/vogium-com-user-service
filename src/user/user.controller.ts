@@ -2,14 +2,15 @@ import { Body, Controller, Get, Param, Put } from '@nestjs/common';
 import { getUserByEmailRequestDTO } from './dto/request/get-user-by-email-request.dto';
 import { UserService } from './user.service';
 import { UserDTO } from './dto/user.dto';
-import { updateUserRequestDTO } from './dto/request/update-user-request.dto';
 import { getAllUsersByFieldRequestDTO } from './dto/request/get-all-users-by-params-request.dto';
 import { getAllUsersResponseDTO } from './dto/response/get-all-users-response.dto';
-import { updateSetUserUsernameRequestDTO } from './dto/request/update-user-set-username-request.dto';
-import { updateUserUsernameRequestDTO } from './dto/request/update-user-username-request.dto';
-import { updateUserRealnameRequestDTO } from './dto/request/update-user-realname-request.dto';
-import { updateUserAccountTypeRequestDTO } from './dto/request/update-user-account-type-request.dto';
-import { updateUserAccountStatusRequestDTO } from './dto/request/update-user-account-status-request.dto';
+import { UpdateUserUsernameRequestDTO } from './dto/request/update-user-username-request.dto';
+import { UpdateUserRealnameRequestDTO } from './dto/request/update-user-realname-request.dto';
+import { UpdateUserAccountTypeRequestDTO } from './dto/request/update-user-account-type-request.dto';
+import { UpdateUserAccountStatusRequestDTO } from './dto/request/update-user-account-status-request.dto';
+import { UpdateUserTypeRequestDTO } from './dto/request/update-user-user-type-request.dto';
+import { UpdateUserStatusRequestDTO } from './dto/request/update-user-user-status-request.dto';
+import { UpdateUserBanRequestDTO } from './dto/request/update-user-user-ban-request.dto';
 
 @Controller('user')
 export class UserController {
@@ -30,59 +31,40 @@ export class UserController {
     return await this.userService.getAllUsers(request.fieldParams || []);
   }
 
-  @Put(':authId')
-  public async updateUser(
-    @Body() userData: updateUserRequestDTO,
-    @Param('authId') authId: string,
-  ) {
-    return await this.userService.updateUser(authId, userData);
+  @Put('/update/username')
+  public async updateUsername(@Body() request: UpdateUserUsernameRequestDTO) {
+    return await this.userService.updateUsername(request);
   }
 
-  //todo iki türlü senaryo varmış. kullanıcı üye olurken ve sonradan değiştirme diye..
-  // görmezden gelinebilir..
-  // Kaldırılacak...
-  @Put('/update/set/username/:authId')
-  public async updateSetUsername(
-    @Param('authId') authId: string,
-    @Body() userData: updateSetUserUsernameRequestDTO,
-  ) {
-    return await this.userService.updateSetUsername(authId, userData.username);
+  @Put('/update/realname')
+  public async updateRealname(@Body() request: UpdateUserRealnameRequestDTO) {
+    return await this.userService.updateRealname(request);
   }
 
-  @Put('/update/username/:authId')
-  public async updateUsername(
-    @Param('authId') authId: string,
-    @Body() userData: updateUserUsernameRequestDTO,
-  ) {
-    return await this.userService.updateUsername(authId, userData.username);
-  }
-
-  @Put('/update/realname/:authId')
-  public async updateRealname(
-    @Param('authId') authId: string,
-    @Body() userData: updateUserRealnameRequestDTO,
-  ) {
-    return await this.userService.updateRealname(authId, userData.realname);
-  }
-
-  @Put('/update/accountType/:authId')
+  @Put('/update/accountType')
   public async updateAccountType(
-    @Param('authId') authId: string,
-    @Body() userData: updateUserAccountTypeRequestDTO,
+    @Body() request: UpdateUserAccountTypeRequestDTO,
   ) {
-    return await this.userService.updateAccountType(
-      authId,
-      userData.accountType,
-    );
+    return await this.userService.updateAccountType(request);
   }
-  @Put('/update/accountStatus/:authId')
+  @Put('/update/accountStatus')
   public async updateAccountStatus(
-    @Param('authId') authId: string,
-    @Body() userData: updateUserAccountStatusRequestDTO,
+    @Body() request: UpdateUserAccountStatusRequestDTO,
   ) {
-    return await this.userService.updateAccountStatus(
-      authId,
-      userData.accountStatus,
-    );
+    return await this.userService.updateAccountStatus(request);
+  }
+
+  @Put('/update/usertype')
+  public async updateUserType(@Body() request: UpdateUserTypeRequestDTO) {
+    return await this.userService.updateUserType(request);
+  }
+
+  @Put('/update/userstatus')
+  public async updateUserStatus(@Body() request: UpdateUserStatusRequestDTO) {
+    return await this.userService.updateUserStatus(request);
+  }
+  @Put('/update/ban')
+  public async updateUserBan(@Body() request: UpdateUserBanRequestDTO) {
+    return await this.userService.updateUserBan(request);
   }
 }

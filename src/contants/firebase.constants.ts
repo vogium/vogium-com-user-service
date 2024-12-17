@@ -10,3 +10,9 @@ export const FIREBASE_ERROR_MESSAGES = {
   UNEXPECTED_ERROR: 'An unexpected error occurred',
   USERNAME_ALREADY_EXISTS: 'Username already exists',
 } as const;
+
+export const LOCAL_RETURN_QUERY_TYPES = {
+  MULTIPLE_RECORDS: 'multiple',
+  SINGLE_RECORD: 'single',
+  NOT_FOUND: 'empty',
+} as const;
