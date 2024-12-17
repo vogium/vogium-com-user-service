@@ -6,24 +6,14 @@ import {
   InternalServerErrorException,
   NotFoundException,
   OnModuleInit,
-  UnauthorizedException,
 } from '@nestjs/common';
-import { DocumentData, FieldValue, Timestamp } from 'firebase-admin/firestore';
+import { DocumentData, FieldValue } from 'firebase-admin/firestore';
 import { FieldParams } from './dto/request-field-params.dto';
 import {
   COLLECTION_NAMES,
   FIREBASE_ERROR_MESSAGES,
   LOCAL_RETURN_QUERY_TYPES,
 } from 'src/constants/firebase.constants';
-import { UserMetadata } from 'firebase-admin/lib/auth/user-record';
-
-const LOCAL_RETURN_QUERY = {
-  TYPES: {
-    MULTIPLE_RECORDS: 'multiple',
-    SINGLE_RECORD: 'single',
-    NOT_FOUND: 'empty',
-  },
-};
 
 @Injectable()
 export class FirebaseService implements OnModuleInit {
@@ -40,28 +30,6 @@ export class FirebaseService implements OnModuleInit {
   async getAllUsers(fieldParams: FieldParams[]) {
     const users = await this.getUsersByQuery(fieldParams);
     return users;
-  }
-
-  async updateUserInUsersCollection<T>(authId: string, userData: Partial<T>) {
-    const dataNew = JSON.parse(JSON.stringify(userData));
-    try {
-      await admin
-        .firestore()
-        .collection(COLLECTION_NAMES.USERS_COLLECTION)
-        .doc(authId)
-        .update(dataNew);
-
-      return {
-        isSuccess: true,
-        data: {
-          ...userData,
-        },
-      };
-    } catch (error) {
-      return {
-        isSuccess: false,
-      };
-    }
   }
 
   // Updating username. First check if it's available or not. Then updating the username and usernameChangedDate to current date.
@@ -272,7 +240,6 @@ export class FirebaseService implements OnModuleInit {
     }
   }
 
-  //todo düzenlenecek.. docs dönecek..
   async getUsersByQuery(queryParams: FieldParams[]): Promise<DocumentData[]> {
     try {
       const collectionRef = admin
@@ -284,7 +251,6 @@ export class FirebaseService implements OnModuleInit {
         query = query.where(param.field, param.operator, param.value);
       });
 
-      console.log('query', queryParams);
       const snapshot = await query.get();
 
       if (snapshot.empty) {
@@ -305,56 +271,6 @@ export class FirebaseService implements OnModuleInit {
         message: FIREBASE_ERROR_MESSAGES.UNEXPECTED_ERROR,
         error: error.message,
       });
-    }
-  }
-
-  async getFirebaseUserByEmail(email: string) {
-    try {
-      const userRecord = await admin.auth().getUserByEmail(email);
-      return userRecord;
-    } catch (error) {
-      throw new Error(FIREBASE_ERROR_MESSAGES.USER_NOT_FOUND);
-    }
-  }
-
-  async verifyIdToken(idToken: string) {
-    try {
-      const decodedToken = await admin.auth().verifyIdToken(idToken);
-      return decodedToken;
-    } catch (error) {
-      throw new UnauthorizedException(FIREBASE_ERROR_MESSAGES.UNAUTHORIZED);
-    }
-  }
-
-  async getUserPreviewCollection(): Promise<
-    FirebaseFirestore.CollectionReference<FirebaseFirestore.DocumentData>
-  > {
-    const userPreviewCollection = admin
-      .firestore()
-      .collection(COLLECTION_NAMES.USER_PREVIEWS_COLLECTION);
-    return userPreviewCollection;
-  }
-
-  async updatePreview(
-    previewId: string,
-    previewData: Partial<DocumentData>,
-  ): Promise<DocumentData> {
-    try {
-      const userPreviewCollection = await this.getUserPreviewCollection();
-      userPreviewCollection.doc(previewId).update(previewData);
-
-      return {
-        id: previewId,
-        ...previewData,
-      };
-    } catch (error) {
-      throw new HttpException(
-        {
-          message: FIREBASE_ERROR_MESSAGES.UNEXPECTED_ERROR,
-          error: error.message,
-        },
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
     }
   }
 
