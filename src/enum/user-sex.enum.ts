@@ -1,15 +1,15 @@
 export class UserSex {
-    static readonly male = 0;
-    static readonly female = 1;
-    static readonly unknown = 2;
+    static readonly MALE = 0;
+    static readonly FEMALE = 1;
+    static readonly UNKNOWN = 2;
   
     static fromJson(sexCode: number) {
       switch (sexCode) {
-        case UserSex.male:
+        case UserSex.MALE:
           return 'male';
-        case UserSex.female:
+        case UserSex.FEMALE:
           return 'female';
-        case UserSex.unknown:
+        case UserSex.UNKNOWN:
           return 'unknown';
         default:
           throw new Error('Invalid UserSex');
@@ -19,11 +19,11 @@ export class UserSex {
     static toJson(sex: string): number {
       switch (sex) {
         case 'male':
-          return UserSex.male;
+          return UserSex.MALE;
         case 'female':
-          return UserSex.female;
+          return UserSex.FEMALE;
         case 'unknown':
-          return UserSex.unknown;
+          return UserSex.UNKNOWN;
         default:
           throw new Error('Invalid UserSex');
       }

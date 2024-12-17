@@ -1,15 +1,15 @@
 export class AccountStatus {
-    static readonly user = 0;
-    static readonly vogger = 1;
-    static readonly business = 2;
+    static readonly USER = 0;
+    static readonly VOGGER = 1;
+    static readonly BUSINESS = 2;
   
     static fromJson(typeCode: number) {
       switch (typeCode) {
-        case AccountStatus.user:
+        case AccountStatus.USER:
           return 'user';
-        case AccountStatus.vogger:
+        case AccountStatus.VOGGER:
           return 'vogger';
-        case AccountStatus.business:
+        case AccountStatus.BUSINESS:
           return 'business';
         default:
           throw new Error('Invalid AccountStatus');
@@ -19,11 +19,11 @@ export class AccountStatus {
     static toJson(accountStatus: string): number {
       switch (accountStatus) {
         case 'user':
-          return AccountStatus.user;
+          return AccountStatus.USER;
         case 'vogger':
-          return AccountStatus.vogger;
+          return AccountStatus.VOGGER;
         case 'business':
-          return AccountStatus.business;
+          return AccountStatus.BUSINESS;
         default:
           throw new Error('Invalid AccountStatus');
       }

@@ -121,7 +121,7 @@ export class UserService {
     user.banDate = request.isBanned ? FieldValue.serverTimestamp() : null;
     //todo maybe iso can be send and then parse it to timestamp...
     user.expireBanDate = request.isBanned ? request.expireBanDate : null;
-    user.accountType = request.isBanned ? AccountType.user : user.accountType;
+    user.accountType = request.isBanned ? AccountType.USER : user.accountType;
     return await this.firebaseService.updateField(firebaseResponse, user);
   }
   

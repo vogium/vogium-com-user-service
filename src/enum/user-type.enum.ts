@@ -1,19 +1,19 @@
 export class UserType {
-    static readonly basic = 0;
-    static readonly plus = 1;
-    static readonly prive = 2;
-    static readonly elite = 3;
+    static readonly BASIC = 0;
+    static readonly PLUS = 1;
+    static readonly PRIVE = 2;
+    static readonly ELITE = 3;
   
     static fromJson(typeCode: number) {
       switch (typeCode) {
-        case UserType.basic:
-          return 'basic';
-        case UserType.plus:
-          return 'plus';
-        case UserType.prive:
-          return 'prive';
-        case UserType.elite:
-          return 'elite';
+        case UserType.BASIC:
+          return 'BASIC';
+        case UserType.PLUS:
+          return 'PLUS';
+        case UserType.PRIVE:
+          return 'PRIVE';
+        case UserType.ELITE:
+          return 'ELITE';
         default:
           throw new Error('Invalid UserType');
       }
@@ -21,14 +21,14 @@ export class UserType {
   
     static toJson(userType: string): number {
       switch (userType) {
-        case 'basic':
-          return UserType.basic;
-        case 'plus':
-          return UserType.plus;
-        case 'prive':
-          return UserType.prive;
-        case 'elite':
-          return UserType.elite;
+        case 'BASIC':
+          return UserType.BASIC;
+        case 'PLUS':
+          return UserType.PLUS;
+        case 'PRIVE':
+          return UserType.PRIVE;
+        case 'ELITE':
+          return UserType.ELITE;
         default:
           throw new Error('Invalid UserType');
       }
