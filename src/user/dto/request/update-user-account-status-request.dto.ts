@@ -1,8 +1,13 @@
-import { IsEnum } from 'class-validator';
+import { IsEnum, IsNotEmpty, IsString } from 'class-validator';
 import { AccountStatus } from 'src/enum/account-status.enum';
 
-export class updateUserAccountStatusRequestDTO {
+export class UpdateUserAccountStatusRequestDTO {
   //validate enum
   @IsEnum(AccountStatus)
+  @IsNotEmpty()
   accountStatus: AccountStatus;
+
+  @IsNotEmpty()
+  @IsString()
+  authId: string;
 }
