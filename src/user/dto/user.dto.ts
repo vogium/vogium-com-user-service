@@ -1,45 +1,10 @@
-import {
-  IsOptional,
-  IsString,
-  IsBoolean,
-  IsInt,
-  IsEmail,
-} from 'class-validator';
-import { Timestamp } from 'firebase/firestore';
-
-export enum AccountType {
-  USER = 'user',
-  MODERATOR = 'moderator',
-  ADMIN = 'admin',
-  SUPERUSER = 'superuser',
-  DEVELOPER = 'developer',
-}
-
-export enum AccountStatus {
-  USER = 'user',
-  VOGGER = 'vogger',
-  BUSINESS = 'business',
-}
-
-export enum UserType {
-  BASIC = 'basic',
-  PLUS = 'plus',
-  PRIVE = 'prive',
-  ELITE = 'elite',
-}
-
-export enum UserStatus {
-  NORMAL = 'normal',
-  VERIFIED = 'verified',
-  VOGGER = 'vogger',
-  BUSINESS = 'business',
-}
-
-export enum UserSex {
-  MALE = 'male',
-  FEMALE = 'female',
-  UNKNOWN = 'unknown',
-}
+import { IsString, IsOptional, IsInt, IsEmail, IsBoolean } from "class-validator";
+import { Timestamp } from "firebase-admin/firestore";
+import { AccountStatus } from "src/enum/account-status.enum";
+import { AccountType } from "src/enum/account-type.enum";
+import { UserSex } from "src/enum/user-sex.enum";
+import { UserStatus } from "src/enum/user-status.enum";
+import { UserType } from "src/enum/user-type.enum";
 
 export class UserDTO {
   @IsString()
@@ -98,7 +63,7 @@ export class UserDTO {
 
   @IsInt()
   followingCount: number = 0;
-
+ß
   @IsInt()
   subscriberCount: number = 0;
 

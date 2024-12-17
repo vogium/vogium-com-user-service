@@ -1,21 +1,21 @@
 export class AccountType {
-    static readonly user = 0;
-    static readonly moderator = 1;
-    static readonly admin = 2;
-    static readonly superuser = 3;
-    static readonly developer = 4;
+    static readonly USER = 0;
+    static readonly MODERATOR = 1;
+    static readonly ADMIN = 2;
+    static readonly SUPERUSER = 3;
+    static readonly DEVELOPER = 4;
   
     static fromJson(typeCode: number): string {
       switch (typeCode) {
-        case AccountType.user:
+        case AccountType.USER:
           return 'user';
-        case AccountType.moderator:
+        case AccountType.MODERATOR:
           return 'moderator';
-        case AccountType.admin:
+        case AccountType.ADMIN:
           return 'admin';
-        case AccountType.superuser:
+        case AccountType.SUPERUSER:
           return 'superuser';
-        case AccountType.developer:
+        case AccountType.DEVELOPER:
           return 'developer';
         default:
           throw new Error('Invalid AccountType');
@@ -25,15 +25,15 @@ export class AccountType {
     static toJson(accountType: string): number {
       switch (accountType) {
         case 'user':
-          return AccountType.user;
+          return AccountType.USER;
         case 'moderator':
-          return AccountType.moderator;
+          return AccountType.MODERATOR;
         case 'admin':
-          return AccountType.admin;
+          return AccountType.ADMIN;
         case 'superuser':
-          return AccountType.superuser;
+          return AccountType.SUPERUSER;
         case 'developer':
-          return AccountType.developer;
+          return AccountType.DEVELOPER;
         default:
           throw new Error('Invalid AccountType');
       }

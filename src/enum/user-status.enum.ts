@@ -1,19 +1,19 @@
 export class UserStatus {
-    static readonly normal = 0;
-    static readonly verified = 1;
-    static readonly vogger = 2;
-    static readonly business = 3;
+    static readonly NORMAL = 0;
+    static readonly VERIFIED = 1;
+    static readonly VOGGER = 2;
+    static readonly BUSINESS = 3;
   
     static fromJson(typeCode: number) {
       switch (typeCode) {
-        case UserStatus.normal:
-          return 'normal';
-        case UserStatus.verified:
-          return 'verified';
-        case UserStatus.vogger:
-          return 'vogger';
-        case UserStatus.business:
-          return 'business';
+        case UserStatus.NORMAL:
+          return 'NORMAL';
+        case UserStatus.VERIFIED:
+          return 'VERIFIED';
+        case UserStatus.VOGGER:
+          return 'VOGGER';
+        case UserStatus.BUSINESS:
+          return 'BUSINESS';
         default:
           throw new Error('Invalid UserStatus');
       }
@@ -21,14 +21,14 @@ export class UserStatus {
   
     static toJson(userStatus: string): number {
       switch (userStatus) {
-        case 'normal':
-          return UserStatus.normal;
-        case 'verified':
-          return UserStatus.verified;
-        case 'vogger':
-          return UserStatus.vogger;
-        case 'business':
-          return UserStatus.business;
+        case 'NORMAL':
+          return UserStatus.NORMAL;
+        case 'VERIFIED':
+          return UserStatus.VERIFIED;
+        case 'VOGGER':
+          return UserStatus.VOGGER;
+        case 'BUSINESS':
+          return UserStatus.BUSINESS;
         default:
           throw new Error('Invalid UserStatus');
       }
