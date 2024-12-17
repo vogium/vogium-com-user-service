@@ -12,7 +12,7 @@ import { UpdateUserAboutDto } from './dto/request/update-user-about-dto';
 import { UpdateUserAvatarUrlRequestDTO } from './dto/request/update-user-avatar-url-request.dto';
 import { AccountType } from 'src/enum/account-type.enum';
 import { AccountStatus } from 'src/enum/account-status.enum';
-import { LOCAL_RETURN_QUERY_TYPES, FIREBASE_ERROR_MESSAGES } from 'src/contants/firebase.constants';
+import { LOCAL_RETURN_QUERY_TYPES, FIREBASE_ERROR_MESSAGES } from 'src/constants/firebase.constants';
 import { UpdateUserEmailRequestDTO } from './dto/request/update-user-email-request.dto';
 import { UpdateUserGenderRequestDTO } from './dto/request/update-user-gender-request.dto';
 import { UpdateUserIsAccountVerifiedRequestDTO } from './dto/request/update-user-is-account-verified-request-dto';
@@ -109,7 +109,7 @@ export class UserService {
     return firebaseResponse;
   }
 
-  public async frozeUserAccount(
+  public async deactivateUserAccount(
     request: UpdateUserFrozenRequestDTO,
   ): Promise<UserDTO> {
     const {authId, isFrozen} = request;

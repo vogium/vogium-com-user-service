@@ -21,11 +21,11 @@ import { UpdateUserIsAccountVerifiedRequestDTO } from './dto/request/update-user
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
-  @Get()
+  @Get('/find/byEmail')
   public async getUserByEmail(
     @Body() request: getUserByEmailRequestDTO,
   ): Promise<UserDTO> {
-    console.log('request', request);
+    console.log(request);
     return await this.userService.getUserByEmail(request);
   }
 
@@ -40,7 +40,8 @@ export class UserController {
   public async frozeUserAccount(
     @Body() request: UpdateUserFrozenRequestDTO,
   ) {
-    return await this.userService.frozeUserAccount(request);
+    console.log(request);
+    return await this.userService.deactivateUserAccount(request);
   }
 
   @Put('/update/userAbout')

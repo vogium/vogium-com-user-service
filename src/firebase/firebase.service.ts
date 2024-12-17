@@ -13,7 +13,7 @@ import { FieldParams } from './dto/request-field-params.dto';
 import {
   COLLECTION_NAMES,
   FIREBASE_ERROR_MESSAGES,
-} from 'src/contants/firebase.constants';
+} from 'src/constants/firebase.constants';
 import { UserMetadata } from 'firebase-admin/lib/auth/user-record';
 
 const LOCAL_RETURN_QUERY = {

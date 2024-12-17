@@ -1,12 +1,9 @@
-import { Expose } from 'class-transformer';
-import { IsNotEmpty, IsOptional } from 'class-validator';
+import { IsNotEmpty} from 'class-validator';
 
 export class getUserByEmailRequestDTO {
-  //   @IsOptional()
   @IsNotEmpty()
   private _email: string;
 
-  @Expose()
   public get email(): string {
     return this._email;
   }
