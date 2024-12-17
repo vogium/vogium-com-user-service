@@ -1,22 +1,15 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { Injectable, NotFoundException } from '@nestjs/common';
 import { FirebaseService } from 'src/firebase/firebase.service';
 import { getUserByEmailRequestDTO } from './dto/request/get-user-by-email-request.dto';
 import { UserDTO } from './dto/user.dto';
 import { UtilService } from 'src/util/util.service';
 import { FieldParams } from 'src/firebase/dto/request-field-params.dto';
 import { getAllUsersResponseDTO } from './dto/response/get-all-users-response.dto';
-import { updateUserRequestDTO } from './dto/request/update-user-request.dto';
 import { UpdateUserFrozenRequestDTO } from './dto/request/update-user-frozen-request.dto';
 import { DocumentData, FieldValue } from 'firebase-admin/firestore';
 import { UpdateUserAboutDto } from './dto/request/update-user-about-dto';
 import { UpdateUserAvatarUrlRequestDTO } from './dto/request/update-user-avatar-url-request.dto';
 import { AccountType } from 'src/enum/account-type.enum';
-import { FieldValue } from 'firebase-admin/firestore';
-import {
-  FIREBASE_ERROR_MESSAGES,
-  LOCAL_RETURN_QUERY_TYPES,
-} from 'src/contants/firebase.constants';
 import { UpdateUserStatusRequestDTO } from './dto/request/update-user-user-status-request.dto';
 import { UpdateUserTypeRequestDTO } from './dto/request/update-user-user-type-request.dto';
 import { UpdateUserAccountStatusRequestDTO } from './dto/request/update-user-account-status-request.dto';
@@ -24,12 +17,10 @@ import { UpdateUserAccountTypeRequestDTO } from './dto/request/update-user-accou
 import { UpdateUserRealnameRequestDTO } from './dto/request/update-user-realname-request.dto';
 import { UpdateUserUsernameRequestDTO } from './dto/request/update-user-username-request.dto';
 import { UpdateUserBanRequestDTO } from './dto/request/update-user-user-ban-request.dto';
-import { AccountStatus } from 'src/enum/account-status.enum';
 import { LOCAL_RETURN_QUERY_TYPES, FIREBASE_ERROR_MESSAGES } from 'src/constants/firebase.constants';
 import { UpdateUserEmailRequestDTO } from './dto/request/update-user-email-request.dto';
 import { UpdateUserGenderRequestDTO } from './dto/request/update-user-gender-request.dto';
 import { UpdateUserIsAccountVerifiedRequestDTO } from './dto/request/update-user-is-account-verified-request-dto';
-import { access } from 'fs';
 
 @Injectable()
 export class UserService {
@@ -133,27 +124,7 @@ export class UserService {
     user.accountType = request.isBanned ? AccountType.user : user.accountType;
     return await this.firebaseService.updateField(firebaseResponse, user);
   }
-
-  private async getUserFromFirestore(authId: string) {
-    const firebaseResponse = await this.firebaseService.getUserByQuery({
-      field: 'authId',
-      operator: '==',
-      value: authId,
-    });
-
-    if (!firebaseResponse) {
-      throw new NotFoundException('firebase response not found');
-    }
-
-    if (firebaseResponse.type !== LOCAL_RETURN_QUERY_TYPES.SINGLE_RECORD) {
-      throw new NotFoundException(FIREBASE_ERROR_MESSAGES.USER_NOT_FOUND);
-    }
-    return {
-      firebaseResponse: firebaseResponse.data,
-      user: firebaseResponse.data.data(),
-    };
-  }
-
+  
   public async deactivateUserAccount(
     request: UpdateUserFrozenRequestDTO,
   ): Promise<UserDTO> {

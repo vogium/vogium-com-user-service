@@ -1,10 +1,9 @@
-import { Body, Controller, Get, Param, Put, Query } from '@nestjs/common';
+import { Body, Controller, Get, Put } from '@nestjs/common';
 import { getUserByEmailRequestDTO } from './dto/request/get-user-by-email-request.dto';
 import { UserService } from './user.service';
 import { UserDTO } from './dto/user.dto';
 import { getAllUsersByFieldRequestDTO } from './dto/request/get-all-users-by-params-request.dto';
 import { getAllUsersResponseDTO } from './dto/response/get-all-users-response.dto';
-import { UpdateUserUsernameRequestDTO } from './dto/request/update-user-username-request.dto';
 import { UpdateUserRealnameRequestDTO } from './dto/request/update-user-realname-request.dto';
 import { UpdateUserAccountTypeRequestDTO } from './dto/request/update-user-account-type-request.dto';
 import { UpdateUserAccountStatusRequestDTO } from './dto/request/update-user-account-status-request.dto';
@@ -14,11 +13,6 @@ import { UpdateUserBanRequestDTO } from './dto/request/update-user-user-ban-requ
 import { UpdateUserFrozenRequestDTO } from './dto/request/update-user-frozen-request.dto';
 import { UpdateUserAboutDto } from './dto/request/update-user-about-dto';
 import { UpdateUserAvatarUrlRequestDTO } from './dto/request/update-user-avatar-url-request.dto';
-import { updateSetUserUsernameRequestDTO } from './dto/request/update-user-set-username-request.dto';
-import { updateUserUsernameRequestDTO } from './dto/request/update-user-username-request.dto';
-import { updateUserRealnameRequestDTO } from './dto/request/update-user-realname-request.dto';
-import { updateUserAccountTypeRequestDTO } from './dto/request/update-user-account-type-request.dto';
-import { updateUserAccountStatusRequestDTO } from './dto/request/update-user-account-status-request.dto';
 import { UpdateUserEmailRequestDTO } from './dto/request/update-user-email-request.dto';
 import { UpdateUserGenderRequestDTO } from './dto/request/update-user-gender-request.dto';
 import { UpdateUserIsAccountVerifiedRequestDTO } from './dto/request/update-user-is-account-verified-request-dto';
@@ -62,36 +56,6 @@ export class UserController {
     @Body() request: UpdateUserAvatarUrlRequestDTO,
   ) {
     return await this.userService.updateUserAvatar(request);
-  }
-
-  @Put('/update/username')
-  public async updateUsername(@Body() request: UpdateUserUsernameRequestDTO) {
-    return await this.userService.updateUsername(request);
-  @Put(':authId')
-  public async updateUser(
-    @Body() userData: updateUserRequestDTO,
-    @Query('authId') authId: string,
-  ) {
-    return await this.userService.updateUser(authId, userData);
-  }
-
-  //todo iki türlü senaryo varmış. kullanıcı üye olurken ve sonradan değiştirme diye..
-  // görmezden gelinebilir..
-  // Kaldırılacak...
-  @Put('/update/set/username/:authId')
-  public async updateSetUsername(
-    @Param('authId') authId: string,
-    @Body() userData: updateSetUserUsernameRequestDTO,
-  ) {
-    return await this.userService.updateSetUsername(authId, userData.username);
-  }
-
-  @Put('/update/username/:authId')
-  public async updateUsername(
-    @Param('authId') authId: string,
-    @Body() userData: updateUserUsernameRequestDTO,
-  ) {
-    return await this.userService.updateUsername(authId, userData.username);
   }
 
   @Put('/update/realname')

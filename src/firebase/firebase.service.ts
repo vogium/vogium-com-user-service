@@ -14,7 +14,6 @@ import {
   COLLECTION_NAMES,
   FIREBASE_ERROR_MESSAGES,
   LOCAL_RETURN_QUERY_TYPES,
-} from 'src/contants/firebase.constants';
 } from 'src/constants/firebase.constants';
 import { UserMetadata } from 'firebase-admin/lib/auth/user-record';
 
@@ -233,9 +232,6 @@ export class FirebaseService implements OnModuleInit {
   async getUserByQuery(
     queryParams: FieldParams,
   ): Promise<{ type: string; data: any }> {
-    throwErrorOnEmpty = true,
-    throwErrorOnMultiple = true,
-  ): Promise<{ type: string; data: any}> {
     try {
       const collectionRef = admin
         .firestore()
@@ -263,8 +259,6 @@ export class FirebaseService implements OnModuleInit {
       return {
         type: LOCAL_RETURN_QUERY_TYPES.SINGLE_RECORD,
         data: snapshot.docs[0],
-        type: LOCAL_RETURN_QUERY.TYPES.SINGLE_RECORD,
-        data: snapshot.docs[0],
       };
     } catch (error) {
       // if (error instanceof HttpException) {
@@ -276,10 +270,6 @@ export class FirebaseService implements OnModuleInit {
       //   stack: error.toString(),
       // });
     }
-  }
-
-  async updateField(userDoc: DocumentData, userData: any){
-    return await userDoc.ref.update(userData);
   }
 
   //todo düzenlenecek.. docs dönecek..
