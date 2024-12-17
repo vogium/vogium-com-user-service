@@ -14,7 +14,16 @@ import {
   COLLECTION_NAMES,
   FIREBASE_ERROR_MESSAGES,
   LOCAL_RETURN_QUERY_TYPES,
-} from 'src/contants/firebase.constants';
+} from 'src/constants/firebase.constants';
+import { UserMetadata } from 'firebase-admin/lib/auth/user-record';
+
+const LOCAL_RETURN_QUERY = {
+  TYPES: {
+    MULTIPLE_RECORDS: 'multiple',
+    SINGLE_RECORD: 'single',
+    NOT_FOUND: 'empty',
+  },
+};
 
 @Injectable()
 export class FirebaseService implements OnModuleInit {
