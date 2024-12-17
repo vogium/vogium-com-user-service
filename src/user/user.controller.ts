@@ -16,6 +16,7 @@ import { UpdateUserAvatarUrlRequestDTO } from './dto/request/update-user-avatar-
 import { UpdateUserEmailRequestDTO } from './dto/request/update-user-email-request.dto';
 import { UpdateUserGenderRequestDTO } from './dto/request/update-user-gender-request.dto';
 import { UpdateUserIsAccountVerifiedRequestDTO } from './dto/request/update-user-is-account-verified-request-dto';
+import { UpdateUserUsernameRequestDTO } from './dto/request/update-user-username-request.dto';
 
 @Controller('user')
 export class UserController {
@@ -29,7 +30,12 @@ export class UserController {
     return await this.userService.getUserByEmail(request);
   }
 
-  @Get('all')
+  @Put('/update/username')
+  public async updateUsername(@Body() request: UpdateUserUsernameRequestDTO) {
+    return await this.userService.updateUsername(request);
+  }
+  
+  @Get('/find/all')
   public async getAllUsers(
     @Body() request: getAllUsersByFieldRequestDTO,
   ): Promise<getAllUsersResponseDTO[]> {
