@@ -4,9 +4,8 @@ import { getUserByEmailRequestDTO } from './dto/request/get-user-by-email-reques
 import { UserDTO } from './dto/user.dto';
 import { UtilService } from 'src/util/util.service';
 import { FieldParams } from 'src/firebase/dto/request-field-params.dto';
-import { getAllUsersResponseDTO } from './dto/response/get-all-users-response.dto';
 import { UpdateUserFrozenRequestDTO } from './dto/request/update-user-frozen-request.dto';
-import { DocumentData, FieldValue } from 'firebase-admin/firestore';
+import { FieldValue } from 'firebase-admin/firestore';
 import { UpdateUserAboutDto } from './dto/request/update-user-about-dto';
 import { UpdateUserAvatarUrlRequestDTO } from './dto/request/update-user-avatar-url-request.dto';
 import { AccountType } from 'src/enum/account-type.enum';
@@ -17,10 +16,14 @@ import { UpdateUserAccountTypeRequestDTO } from './dto/request/update-user-accou
 import { UpdateUserRealnameRequestDTO } from './dto/request/update-user-realname-request.dto';
 import { UpdateUserUsernameRequestDTO } from './dto/request/update-user-username-request.dto';
 import { UpdateUserBanRequestDTO } from './dto/request/update-user-user-ban-request.dto';
-import { LOCAL_RETURN_QUERY_TYPES, FIREBASE_ERROR_MESSAGES } from 'src/constants/firebase.constants';
+import {
+  LOCAL_RETURN_QUERY_TYPES,
+  FIREBASE_ERROR_MESSAGES,
+} from 'src/constants/firebase.constants';
 import { UpdateUserEmailRequestDTO } from './dto/request/update-user-email-request.dto';
 import { UpdateUserGenderRequestDTO } from './dto/request/update-user-gender-request.dto';
 import { UpdateUserIsAccountVerifiedRequestDTO } from './dto/request/update-user-is-account-verified-request-dto';
+import { GetAllUsersResponseDTO } from './dto/response/get-all-users-response.dto';
 
 @Injectable()
 export class UserService {
@@ -29,29 +32,25 @@ export class UserService {
     private readonly utilService: UtilService,
   ) {}
 
-  public async getUserByEmail(
-    request: getUserByEmailRequestDTO,
-  ): Promise<UserDTO> {
+  public async getUserByEmail(request: getUserByEmailRequestDTO): Promise<any> {
     const firebaseResponse = (await this.firebaseService.getUserByEmail(
       request.email,
     )) as UserDTO;
-    // return await this.utilService.mapToDto(firebaseResponse, UserDTO);
-    return firebaseResponse as UserDTO;
+
+    return await this.utilService.mapToDto(firebaseResponse, UserDTO);
+    // return firebaseResponse as UserDTO;
   }
-  
 
   public async getAllUsers(
     fieldParams: FieldParams[],
-  ): Promise<getAllUsersResponseDTO[]> {
+  ): Promise<GetAllUsersResponseDTO[]> {
     const firebaseResponse =
       await this.firebaseService.getAllUsers(fieldParams);
 
-    return firebaseResponse as getAllUsersResponseDTO[];
-
-    // return await this.utilService.mapToDtoArray<getAllUsersResponseDTO>(
-    //   firebaseResponse,
-    //   getAllUsersResponseDTO,
-    // );
+    return await this.utilService.mapToDtoArray<GetAllUsersResponseDTO>(
+      firebaseResponse,
+      GetAllUsersResponseDTO,
+    );
   }
 
   public async updateUsername(request: UpdateUserUsernameRequestDTO) {
@@ -124,23 +123,20 @@ export class UserService {
     user.accountType = request.isBanned ? AccountType.USER : user.accountType;
     return await this.firebaseService.updateField(firebaseResponse, user);
   }
-  
+
   public async deactivateUserAccount(
     request: UpdateUserFrozenRequestDTO,
   ): Promise<UserDTO> {
-    const {authId, isFrozen} = request;
-    const {firebaseResponse, user} = (await this.getUserFromFirestore(authId));
+    const { authId, isFrozen } = request;
+    const { firebaseResponse, user } = await this.getUserFromFirestore(authId);
     user.isFrozen = isFrozen;
     user.frozenDate = FieldValue.serverTimestamp();
     return await this.firebaseService.updateField(firebaseResponse, user);
   }
 
-
-  public async updateUserAbout(
-    request: UpdateUserAboutDto,
-  ): Promise<UserDTO> {
-    const {authId, about} = request;
-    const {firebaseResponse, user} = (await this.getUserFromFirestore(authId));
+  public async updateUserAbout(request: UpdateUserAboutDto): Promise<UserDTO> {
+    const { authId, about } = request;
+    const { firebaseResponse, user } = await this.getUserFromFirestore(authId);
     user.about = about;
     return await this.firebaseService.updateField(firebaseResponse, user);
   }
@@ -148,8 +144,8 @@ export class UserService {
   public async updateUserAvatar(
     request: UpdateUserAvatarUrlRequestDTO,
   ): Promise<UserDTO> {
-    const {authId, avatarUrl} = request;
-    const {firebaseResponse, user} = (await this.getUserFromFirestore(authId));
+    const { authId, avatarUrl } = request;
+    const { firebaseResponse, user } = await this.getUserFromFirestore(authId);
     user.avatarUrl = avatarUrl;
     return await this.firebaseService.updateField(firebaseResponse, user);
   }
@@ -157,8 +153,8 @@ export class UserService {
   public async updateUserEmail(
     request: UpdateUserEmailRequestDTO,
   ): Promise<UserDTO> {
-    const {authId, emailAddress} = request;
-    const {firebaseResponse, user} = (await this.getUserFromFirestore(authId));
+    const { authId, emailAddress } = request;
+    const { firebaseResponse, user } = await this.getUserFromFirestore(authId);
     user.emailAddress = emailAddress;
     return await this.firebaseService.updateField(firebaseResponse, user);
   }
@@ -166,8 +162,8 @@ export class UserService {
   public async updateUserGender(
     request: UpdateUserGenderRequestDTO,
   ): Promise<UserDTO> {
-    const {authId, sex} = request;
-    const {firebaseResponse, user} = (await this.getUserFromFirestore(authId));
+    const { authId, sex } = request;
+    const { firebaseResponse, user } = await this.getUserFromFirestore(authId);
     user.sex = sex;
     return await this.firebaseService.updateField(firebaseResponse, user);
   }
@@ -175,34 +171,36 @@ export class UserService {
   public async verifyUserAccount(
     request: UpdateUserIsAccountVerifiedRequestDTO,
   ): Promise<UserDTO> {
-    const {authId, isAccountVerified} = request;
-    const {firebaseResponse, user} = (await this.getUserFromFirestore(authId));
+    const { authId, isAccountVerified } = request;
+    const { firebaseResponse, user } = await this.getUserFromFirestore(authId);
     user.isAccountVerified = isAccountVerified;
-    
-    if(isAccountVerified === true){
-    user.accountVerifiedDate = FieldValue.serverTimestamp();
+
+    if (isAccountVerified === true) {
+      user.accountVerifiedDate = FieldValue.serverTimestamp();
     }
     return await this.firebaseService.updateField(firebaseResponse, user);
   }
 
-  private async getUserFromFirestore(authId: string){
-    const types = await this.firebaseService.getUserByQuery(
-      {field: 'authId', operator: '==', value: authId}
-    );
-    if(!types){
+  private async getUserFromFirestore(authId: string) {
+    const types = await this.firebaseService.getUserByQuery({
+      field: 'authId',
+      operator: '==',
+      value: authId,
+    });
+    if (!types) {
       throw new NotFoundException('types response not found');
     }
     if (types.type !== LOCAL_RETURN_QUERY_TYPES.SINGLE_RECORD) {
       throw new NotFoundException(FIREBASE_ERROR_MESSAGES.USER_NOT_FOUND);
     }
     const firebaseResponse = types.data;
-    if(!firebaseResponse){
+    if (!firebaseResponse) {
       throw new NotFoundException('firebase response not found');
     }
     const user = firebaseResponse.data();
-    if(!user){
+    if (!user) {
       throw new NotFoundException('user not found');
     }
-    return {firebaseResponse, user};
+    return { firebaseResponse, user };
   }
 }

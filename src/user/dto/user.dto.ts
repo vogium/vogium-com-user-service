@@ -1,61 +1,55 @@
-import { IsString, IsOptional, IsInt, IsEmail, IsBoolean } from "class-validator";
-import { Timestamp } from "firebase-admin/firestore";
-import { AccountStatus } from "src/enum/account-status.enum";
-import { AccountType } from "src/enum/account-type.enum";
-import { UserSex } from "src/enum/user-sex.enum";
-import { UserStatus } from "src/enum/user-status.enum";
-import { UserType } from "src/enum/user-type.enum";
+import { Expose } from 'class-transformer';
+import { IsString, IsInt } from 'class-validator';
+import { Timestamp } from 'firebase-admin/firestore';
+import { AccountStatus } from 'src/enum/account-status.enum';
+import { AccountType } from 'src/enum/account-type.enum';
+import { UserSex } from 'src/enum/user-sex.enum';
+import { UserStatus } from 'src/enum/user-status.enum';
+import { UserType } from 'src/enum/user-type.enum';
 
 export class UserDTO {
-  @IsString()
+  @Expose()
   authId: string;
 
-  @IsOptional()
-  @IsInt()
-  numberId?: number;
+  @Expose()
+  numberId: number;
 
-  @IsOptional()
+  @Expose()
   @IsString({ each: true })
-  notificationIds?: string[];
+  notificationIds: string[];
 
-  // @IsInt()
-  // authType: number;
+  @Expose()
+  authType: number;
 
-  @IsEmail()
+  @Expose()
   emailAddress: string;
 
-  @IsOptional()
-  @IsString()
-  username?: string;
+  @Expose()
+  username: string;
 
-  @IsOptional()
-  @IsString()
-  realname?: string;
+  @Expose()
+  realname: string;
 
-  @IsOptional()
-  @IsString()
-  phoneNumber?: string;
+  @Expose()
+  phoneNumber: string;
 
-  @IsOptional()
-  @IsString()
-  about?: string;
+  @Expose()
+  about: string;
 
-  @IsOptional()
-  @IsString()
-  avatarUrl?: string;
+  @Expose()
+  avatarUrl: string;
 
-  @IsOptional()
-  @IsString()
-  lastIpAddress?: string;
+  @Expose()
+  lastIpAddress: string;
 
-  @IsOptional()
-  socialAccounts?: Record<string, any>;
+  @Expose()
+  socialAccounts: Record<string, any>;
 
-  @IsOptional()
+  @Expose()
   @IsString({ each: true })
-  topicList?: string[];
+  topicList: string[];
 
-  @IsOptional()
+  @Expose()
   sex: UserSex = UserSex.UNKNOWN;
 
   @IsInt()
@@ -63,7 +57,7 @@ export class UserDTO {
 
   @IsInt()
   followingCount: number = 0;
-ß
+
   @IsInt()
   subscriberCount: number = 0;
 
@@ -106,95 +100,93 @@ export class UserDTO {
   @IsInt()
   businessViewCount: number = 0;
 
-  @IsOptional()
+  @Expose()
   accountType: AccountType = AccountType.USER;
 
-  @IsOptional()
+  @Expose()
   accountStatus: AccountStatus = AccountStatus.USER;
 
-  @IsOptional()
+  @Expose()
   userStatus: UserStatus = UserStatus.NORMAL;
 
-  @IsOptional()
+  @Expose()
   userType: UserType = UserType.BASIC;
 
-  @IsOptional()
-  @IsInt()
-  city?: number;
+  @Expose()
+  city: number;
 
-  @IsOptional()
-  @IsInt()
-  country?: number;
+  @Expose()
+  country: number;
 
-  @IsString()
+  @Expose()
   password: string;
 
-  @IsOptional()
+  @Expose()
   totalExpenditure: number = 0.0;
 
-  @IsOptional()
+  @Expose()
   coefficient: number = 0.0;
 
-  @IsBoolean()
+  @Expose()
   isBanned: boolean = false;
 
-  @IsBoolean()
+  @Expose()
   isDeleted: boolean = false;
 
-  @IsBoolean()
+  @Expose()
   isFrozen: boolean = false;
 
-  @IsBoolean()
+  @Expose()
   isEmailVerified: boolean = false;
 
-  @IsBoolean()
+  @Expose()
   isPhoneVerified: boolean = false;
 
-  @IsBoolean()
+  @Expose()
   isAccountVerified: boolean = false;
 
-  @IsBoolean()
+  @Expose()
   isSubscriptionEnable: boolean = false;
 
-  @IsOptional()
-  createDate?: Timestamp;
+  @Expose()
+  createDate: Timestamp;
 
-  @IsOptional()
-  birthDate?: Timestamp;
+  @Expose()
+  birthDate: Timestamp;
 
-  @IsOptional()
-  banDate?: Timestamp;
+  @Expose()
+  banDate: Timestamp;
 
-  @IsOptional()
-  expireBanDate?: Timestamp;
+  @Expose()
+  expireBanDate: Timestamp;
 
-  @IsOptional()
-  deleteDate?: Timestamp;
+  @Expose()
+  deleteDate: Timestamp;
 
-  @IsOptional()
-  frozenDate?: Timestamp;
+  @Expose()
+  frozenDate: Timestamp;
 
-  @IsOptional()
-  lastLoginDate?: Timestamp;
+  @Expose()
+  lastLoginDate: Timestamp;
 
-  @IsOptional()
-  lastLogoutDate?: Timestamp;
+  @Expose()
+  lastLogoutDate: Timestamp;
 
-  @IsOptional()
-  usernameChangedDate?: Timestamp;
+  @Expose()
+  usernameChangedDate: Timestamp;
 
-  @IsOptional()
-  accountVerifiedDate?: Timestamp;
+  @Expose()
+  accountVerifiedDate: Timestamp;
 
-  @IsOptional()
+  @Expose()
   isFollowing: boolean = false;
 
-  @IsOptional()
+  @Expose()
   isFollower: boolean = false;
 
-  @IsOptional()
+  @Expose()
   isSubscribed: boolean = false;
 
-  @IsOptional()
+  @Expose()
   isBlocked: boolean = false;
 }

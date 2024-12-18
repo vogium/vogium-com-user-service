@@ -110,7 +110,6 @@ export class FirebaseService implements OnModuleInit {
         isSucces: !isDuplicate,
       };
     } catch (error) {
-      console.log('error', error);
       throw new HttpException(
         {
           message: FIREBASE_ERROR_MESSAGES.UNEXPECTED_ERROR,
@@ -186,6 +185,7 @@ export class FirebaseService implements OnModuleInit {
       .firestore()
       .collection(COLLECTION_NAMES.USERS_COLLECTION);
     const snapshot = await usersRef.where('emailAddress', '==', email).get();
+    // const snapshot = undefined;
 
     if (snapshot.empty) {
       throw new NotFoundException(FIREBASE_ERROR_MESSAGES.USER_NOT_FOUND, {
