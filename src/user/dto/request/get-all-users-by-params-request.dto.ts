@@ -1,7 +1,5 @@
 import { Type } from 'class-transformer';
 import {
-  IsArray,
-  IsEmail,
   IsIn,
   IsNotEmpty,
   IsOptional,
@@ -32,7 +30,7 @@ class FieldParamsAttribute {
   value: any;
 }
 
-export class getAllUsersByFieldRequestDTO {
+export class GetAllUsersByFieldRequestDTO {
   @IsOptional()
   @ValidateNested()
   @Type(() => FieldParamsAttribute)

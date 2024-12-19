@@ -2,7 +2,7 @@ import { Expose, Transform } from 'class-transformer';
 import { IsInt, IsOptional } from 'class-validator';
 import { Timestamp } from 'firebase/firestore';
 
-export class getAllUsersResponseDTO {
+export class GetAllUsersResponseDTO {
   @Expose()
   authId: string;
 

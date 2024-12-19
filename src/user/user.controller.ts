@@ -2,8 +2,8 @@ import { Body, Controller, Get, Put } from '@nestjs/common';
 import { getUserByEmailRequestDTO } from './dto/request/get-user-by-email-request.dto';
 import { UserService } from './user.service';
 import { UserDTO } from './dto/user.dto';
-import { getAllUsersByFieldRequestDTO } from './dto/request/get-all-users-by-params-request.dto';
-import { getAllUsersResponseDTO } from './dto/response/get-all-users-response.dto';
+import { GetAllUsersByFieldRequestDTO } from './dto/request/get-all-users-by-params-request.dto';
+import { GetAllUsersResponseDTO } from './dto/response/get-all-users-response.dto';
 import { UpdateUserRealnameRequestDTO } from './dto/request/update-user-realname-request.dto';
 import { UpdateUserAccountTypeRequestDTO } from './dto/request/update-user-account-type-request.dto';
 import { UpdateUserAccountStatusRequestDTO } from './dto/request/update-user-account-status-request.dto';
@@ -26,7 +26,6 @@ export class UserController {
   public async getUserByEmail(
     @Body() request: getUserByEmailRequestDTO,
   ): Promise<UserDTO> {
-    console.log(request);
     return await this.userService.getUserByEmail(request);
   }
 
@@ -34,26 +33,21 @@ export class UserController {
   public async updateUsername(@Body() request: UpdateUserUsernameRequestDTO) {
     return await this.userService.updateUsername(request);
   }
-  
+
   @Get('/find/all')
   public async getAllUsers(
-    @Body() request: getAllUsersByFieldRequestDTO,
-  ): Promise<getAllUsersResponseDTO[]> {
+    @Body() request: GetAllUsersByFieldRequestDTO,
+  ): Promise<GetAllUsersResponseDTO[]> {
     return await this.userService.getAllUsers(request.fieldParams || []);
   }
 
   @Put('/update/deactivateUserAccount')
-  public async frozeUserAccount(
-    @Body() request: UpdateUserFrozenRequestDTO,
-  ) {
-    console.log(request);
+  public async frozeUserAccount(@Body() request: UpdateUserFrozenRequestDTO) {
     return await this.userService.deactivateUserAccount(request);
   }
 
   @Put('/update/userAbout')
-  public async updateUserAbout(
-    @Body() request: UpdateUserAboutDto,
-  ) {
+  public async updateUserAbout(@Body() request: UpdateUserAboutDto) {
     return await this.userService.updateUserAbout(request);
   }
 
@@ -97,9 +91,7 @@ export class UserController {
   }
 
   @Put('/update/userEmailAddress')
-  public async updateUserEmail(
-    @Body() request: UpdateUserEmailRequestDTO,
-  ) {
+  public async updateUserEmail(@Body() request: UpdateUserEmailRequestDTO) {
     return await this.userService.updateUserEmail(request);
   }
 
