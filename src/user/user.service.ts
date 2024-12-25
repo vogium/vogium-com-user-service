@@ -16,14 +16,28 @@ import { UpdateUserAccountTypeRequestDTO } from './dto/request/update-user-accou
 import { UpdateUserRealnameRequestDTO } from './dto/request/update-user-realname-request.dto';
 import { UpdateUserUsernameRequestDTO } from './dto/request/update-user-username-request.dto';
 import { UpdateUserBanRequestDTO } from './dto/request/update-user-user-ban-request.dto';
-import {
-  LOCAL_RETURN_QUERY_TYPES,
-  FIREBASE_ERROR_MESSAGES,
-} from 'src/constants/firebase.constants';
 import { UpdateUserEmailRequestDTO } from './dto/request/update-user-email-request.dto';
 import { UpdateUserGenderRequestDTO } from './dto/request/update-user-gender-request.dto';
 import { UpdateUserIsAccountVerifiedRequestDTO } from './dto/request/update-user-is-account-verified-request-dto';
 import { GetAllUsersResponseDTO } from './dto/response/get-all-users-response.dto';
+import { UpdateUserIsDeletedRequestDTO } from './dto/request/update-user-is-deleted-request.dto';
+import { UpdateUserPhoneNumberRequestDTO } from './dto/request/update-user-phone-number-request.dto';
+import { UpdateUserBirthDateRequestDTO } from './dto/request/update-user-birth-date-request.dto';
+import { UpdateUserIsEmailVerifiedRequestDTO } from './dto/request/update-user-is-email-verified-request-dto';
+import { UpdateUserIsPhoneVerifiedRequestDTO } from './dto/request/update-user-is-phone-verified-request-dto';
+import { UpdateUserFollowerCountRequestDTO } from './dto/request/update-user-follower-count-request.dto';
+import { UpdateUserFollowingCountRequestDTO } from './dto/request/update-user-following-count-request.dto';
+import { UpdateUserSubscriberCountRequestDTO } from './dto/request/update-user-subscriber-count-request.dto';
+import { UpdateUserSubscriptionCountRequestDTO } from './dto/request/update-user-subscription-count-request.dto';
+import { UpdateUserTotalExpenditureRequestDTO } from './dto/request/update-user-total-expenditure-request.dto';
+import { UpdateUserLastLoginDateRequestDTO } from './dto/request/update-user-last-login-date-request.dto';
+import { UpdateUserLastLogoutDateRequestDTO } from './dto/request/update-user-last-logout-date-request.dto';
+import { UpdateUserVogCountRequestDTO } from './dto/request/update-user-vog-count-request.dto';
+import { UpdateUserVogLikeCountRequestDTO } from './dto/request/update-user-vog-like-count-request.dto';
+import { UpdateUserPostCommentCountRequestDTO } from './dto/request/update-user-post-comment-count-request.dto';
+import { UpdateUserFavoriteBusinessCountRequestDTO } from './dto/request/update-user-favorite-business-count-request.dto';
+import { UpdateUserBlogsLikeCountRequestDTO } from './dto/request/update-user-blogs-like-count-request.dto';
+import { UpdateUserBlogsReadCountRequestDTO } from './dto/request/update-user-blogs-read-count-request.dto';
 
 @Injectable()
 export class UserService {
@@ -55,7 +69,7 @@ export class UserService {
 
   public async updateUsername(request: UpdateUserUsernameRequestDTO) {
     // to check user is valid or not manually
-    const {} = await this.getUserFromFirestore(request.authId);
+    const {} = await this.firebaseService.getUserFromFirestoreById(request.authId);
 
     const firebaseResponse = await this.firebaseService.updateUsername(
       request.authId,
@@ -65,7 +79,7 @@ export class UserService {
   }
 
   public async updateRealname(request: UpdateUserRealnameRequestDTO) {
-    const {} = await this.getUserFromFirestore(request.authId);
+    const {} = await this.firebaseService.getUserFromFirestoreById(request.authId);
 
     const firebaseResponse = await this.firebaseService.updateRealname(
       request.authId,
@@ -76,131 +90,256 @@ export class UserService {
 
   // accountType is an integer, therefore need to a key value pair
   public async updateAccountType(request: UpdateUserAccountTypeRequestDTO) {
-    const { firebaseResponse, user } = await this.getUserFromFirestore(
+    const { firebaseResponse, response } = await this.firebaseService.getUserFromFirestoreById(
       request.authId,
     );
 
-    user.accountType = request.accountType;
-    return await this.firebaseService.updateField(firebaseResponse, user);
+    response.accountType = request.accountType;
+    return await firebaseResponse.ref.update(response);
   }
 
   public async updateAccountStatus(request: UpdateUserAccountStatusRequestDTO) {
-    const { firebaseResponse, user } = await this.getUserFromFirestore(
+    const { firebaseResponse, response } = await this.firebaseService.getUserFromFirestoreById(
       request.authId,
     );
 
-    user.accountStatus = request.accountStatus;
-    return await this.firebaseService.updateField(firebaseResponse, user);
+    response.accountStatus = request.accountStatus;
+    return await firebaseResponse.ref.update(response);
   }
 
   public async updateUserType(request: UpdateUserTypeRequestDTO) {
-    const { firebaseResponse, user } = await this.getUserFromFirestore(
+    const { firebaseResponse, response } = await this.firebaseService.getUserFromFirestoreById(
       request.authId,
     );
 
-    user.userType = request.userType;
-    return await this.firebaseService.updateField(firebaseResponse, user);
+    response.userType = request.userType;
+    return await firebaseResponse.ref.update(response);
   }
 
   public async updateUserStatus(request: UpdateUserStatusRequestDTO) {
-    const { firebaseResponse, user } = await this.getUserFromFirestore(
+    const { firebaseResponse, response } = await this.firebaseService.getUserFromFirestoreById(
       request.authId,
     );
 
-    user.userStatus = request.userStatus;
-    return await this.firebaseService.updateField(firebaseResponse, user);
+    response.userStatus = request.userStatus;
+    return await firebaseResponse.ref.update(response);
   }
 
   public async updateUserBan(request: UpdateUserBanRequestDTO) {
-    const { firebaseResponse, user } = await this.getUserFromFirestore(
+    const { firebaseResponse, response } = await this.firebaseService.getUserFromFirestoreById(
       request.authId,
     );
 
-    user.isBanned = request.isBanned;
-    user.banDate = request.isBanned ? FieldValue.serverTimestamp() : null;
+    response.isBanned = request.isBanned;
+    response.banDate = request.isBanned ? FieldValue.serverTimestamp() : null;
     //todo maybe iso can be send and then parse it to timestamp...
-    user.expireBanDate = request.isBanned ? request.expireBanDate : null;
-    user.accountType = request.isBanned ? AccountType.USER : user.accountType;
-    return await this.firebaseService.updateField(firebaseResponse, user);
+    response.expireBanDate = request.isBanned ? request.expireBanDate : null;
+    response.accountType = request.isBanned ? AccountType.USER : response.accountType;
+    return await firebaseResponse.ref.update(response);
   }
 
-  public async deactivateUserAccount(
+  public async  deactivateUserAccount(
     request: UpdateUserFrozenRequestDTO,
   ): Promise<UserDTO> {
     const { authId, isFrozen } = request;
-    const { firebaseResponse, user } = await this.getUserFromFirestore(authId);
-    user.isFrozen = isFrozen;
-    user.frozenDate = FieldValue.serverTimestamp();
-    return await this.firebaseService.updateField(firebaseResponse, user);
+    const { firebaseResponse, response } = await this.firebaseService.getUserFromFirestoreById(authId);
+    response.isFrozen = isFrozen;
+    response.frozenDate = FieldValue.serverTimestamp();
+    return await firebaseResponse.ref.update(response);
   }
 
   public async updateUserAbout(request: UpdateUserAboutDto): Promise<UserDTO> {
     const { authId, about } = request;
-    const { firebaseResponse, user } = await this.getUserFromFirestore(authId);
-    user.about = about;
-    return await this.firebaseService.updateField(firebaseResponse, user);
+    const { firebaseResponse, response } = await this.firebaseService.getUserFromFirestoreById(authId);
+    response.about = about;
+    const {previewFirebaseResponse, previewResponse} = await this.firebaseService.getUserPreviewFromFirestoreById(authId);
+    previewResponse.about = about;
+    await previewFirebaseResponse.ref.update(previewResponse);
+    return await firebaseResponse.ref.update(response);
   }
 
   public async updateUserAvatar(
     request: UpdateUserAvatarUrlRequestDTO,
   ): Promise<UserDTO> {
     const { authId, avatarUrl } = request;
-    const { firebaseResponse, user } = await this.getUserFromFirestore(authId);
-    user.avatarUrl = avatarUrl;
-    return await this.firebaseService.updateField(firebaseResponse, user);
+    const { firebaseResponse, response } = await this.firebaseService.getUserFromFirestoreById(authId);
+    response.avatarUrl = avatarUrl;
+    const {previewFirebaseResponse, previewResponse} = await this.firebaseService.getUserPreviewFromFirestoreById(authId);
+    previewResponse.avatarUrl = avatarUrl;
+    await previewFirebaseResponse.ref.update(previewResponse);
+    return await firebaseResponse.ref.update(response);
   }
 
   public async updateUserEmail(
     request: UpdateUserEmailRequestDTO,
   ): Promise<UserDTO> {
     const { authId, emailAddress } = request;
-    const { firebaseResponse, user } = await this.getUserFromFirestore(authId);
-    user.emailAddress = emailAddress;
-    return await this.firebaseService.updateField(firebaseResponse, user);
+    const { firebaseResponse, response } = await this.firebaseService.getUserFromFirestoreById(authId);
+    response.emailAddress = emailAddress;
+    return await firebaseResponse.ref.update(response);
   }
 
   public async updateUserGender(
     request: UpdateUserGenderRequestDTO,
   ): Promise<UserDTO> {
     const { authId, sex } = request;
-    const { firebaseResponse, user } = await this.getUserFromFirestore(authId);
-    user.sex = sex;
-    return await this.firebaseService.updateField(firebaseResponse, user);
+    const { firebaseResponse, response } = await this.firebaseService.getUserFromFirestoreById(authId);
+    response.sex = sex;
+    return await firebaseResponse.ref.update(response);
   }
 
   public async verifyUserAccount(
     request: UpdateUserIsAccountVerifiedRequestDTO,
   ): Promise<UserDTO> {
     const { authId, isAccountVerified } = request;
-    const { firebaseResponse, user } = await this.getUserFromFirestore(authId);
-    user.isAccountVerified = isAccountVerified;
+    const { firebaseResponse, response } = await this.firebaseService.getUserFromFirestoreById(authId);
+    response.isAccountVerified = isAccountVerified;
 
     if (isAccountVerified === true) {
-      user.accountVerifiedDate = FieldValue.serverTimestamp();
+      response.accountVerifiedDate = FieldValue.serverTimestamp();
     }
-    return await this.firebaseService.updateField(firebaseResponse, user);
+    return await firebaseResponse.ref.update(response);
   }
 
-  private async getUserFromFirestore(authId: string) {
-    const types = await this.firebaseService.getUserByQuery({
-      field: 'authId',
-      operator: '==',
-      value: authId,
-    });
-    if (!types) {
-      throw new NotFoundException('types response not found');
+  public async deleteUser(request: UpdateUserIsDeletedRequestDTO){
+    const { authId, isDeleted } = request;
+    const { firebaseResponse, response } = await this.firebaseService.getUserFromFirestoreById(authId);
+    response.isDeleted = isDeleted;
+    if (isDeleted === true) {
+      response.deletedDate = FieldValue.serverTimestamp();
     }
-    if (types.type !== LOCAL_RETURN_QUERY_TYPES.SINGLE_RECORD) {
-      throw new NotFoundException(FIREBASE_ERROR_MESSAGES.USER_NOT_FOUND);
-    }
-    const firebaseResponse = types.data;
-    if (!firebaseResponse) {
-      throw new NotFoundException('firebase response not found');
-    }
-    const user = firebaseResponse.data();
-    if (!user) {
-      throw new NotFoundException('user not found');
-    }
-    return { firebaseResponse, user };
+
+    const {previewFirebaseResponse, previewResponse} = await this.firebaseService.getUserPreviewFromFirestoreById(authId);
+    previewResponse.isDeleted = isDeleted;
+    await previewFirebaseResponse.ref.update(previewResponse)
+    return await firebaseResponse.ref.update(response);
+
+  }
+
+  public async updatePhoneNumber(request: UpdateUserPhoneNumberRequestDTO){
+    const { authId, phoneNumber } = request;
+    const { firebaseResponse, response } = await this.firebaseService.getUserFromFirestoreById(authId);
+    response.phoneNumber = phoneNumber;
+    return await firebaseResponse.ref.update(response);
+  }
+
+  public async updateUserBirthDate(request: UpdateUserBirthDateRequestDTO) {
+    const { authId, birthDate } = request;
+    const { firebaseResponse, response } = await this.firebaseService.getUserFromFirestoreById(authId);
+    response.birthDate = this.firebaseService.convertDateToTimestamp(birthDate);
+    return await firebaseResponse.ref.update(response);
+  }
+
+  public async updateUserAddress(request: any) {
+    const { authId, city, country } = request;
+    const { firebaseResponse, response } = await this.firebaseService.getUserFromFirestoreById(authId);
+    response.city = city;
+    response.country = country;
+    return await firebaseResponse.ref.update(response);
+  }
+
+  public async updateUserIsEmailVerified(request: UpdateUserIsEmailVerifiedRequestDTO){
+    const { authId, isEmailVerified } = request;
+    const { firebaseResponse, response } = await this.firebaseService.getUserFromFirestoreById(authId);
+    response.isEmailVerified = isEmailVerified;
+    return await firebaseResponse.ref.update(response);
+  }
+
+  public async updateUserIsPhoneVerified(request: UpdateUserIsPhoneVerifiedRequestDTO){
+    const { authId, isPhoneVerified } = request;
+    const { firebaseResponse, response } = await this.firebaseService.getUserFromFirestoreById(authId);
+    response.isPhoneVerified = isPhoneVerified;
+    return await firebaseResponse.ref.update(response);
+  }
+
+  public async updateUserFollowerCount(request: UpdateUserFollowerCountRequestDTO){ 
+    const { authId, followerCount } = request;
+    const { firebaseResponse, response } = await this.firebaseService.getUserFromFirestoreById(authId);
+    response.followerCount = followerCount;
+    return await firebaseResponse.ref.update(response);
+  }
+
+  public async updateUserFollowingCount(request: UpdateUserFollowingCountRequestDTO){ 
+    const { authId, followingCount } = request;
+    const { firebaseResponse, response } = await this.firebaseService.getUserFromFirestoreById(authId);
+    response.followingCount = followingCount;
+    return await firebaseResponse.ref.update(response);
+  }
+
+  public async updateUserSubscriberCount(request: UpdateUserSubscriberCountRequestDTO){
+    const { authId, subscriberCount } = request;
+    const { firebaseResponse, response } = await this.firebaseService.getUserFromFirestoreById(authId);
+    response.subscriberCount = subscriberCount;
+    return await firebaseResponse.ref.update(response);
+  }
+  
+  public async updateUserSubscriptionCount(request: UpdateUserSubscriptionCountRequestDTO){
+    const { authId, subscriptionCount } = request;
+    const { firebaseResponse, response } = await this.firebaseService.getUserFromFirestoreById(authId);
+    response.subscriptionCount = subscriptionCount;
+    return await firebaseResponse.ref.update(response);
+  }
+
+  public async updateUserTotalExpenditure(request: UpdateUserTotalExpenditureRequestDTO) {
+    const { authId, totalExpenditure } = request;
+    const { firebaseResponse, response } = await this.firebaseService.getUserFromFirestoreById(authId);
+    response.totalExpenditure = totalExpenditure;
+    return await firebaseResponse.ref.update(response);
+  }
+  
+  public async updateUserLastLoginDate(request: UpdateUserLastLoginDateRequestDTO){
+    const { authId, lastLoginDate } = request;
+    const { firebaseResponse, response } = await this.firebaseService.getUserFromFirestoreById(authId);
+    response.lastLoginDate = lastLoginDate;
+    return await firebaseResponse.ref.update(response);
+  }
+
+  public async updateUserLastLogoutDate(request: UpdateUserLastLogoutDateRequestDTO){
+    const { authId, lastLogoutDate } = request;
+    const { firebaseResponse, response } = await this.firebaseService.getUserFromFirestoreById(authId);
+    response.lastLoginDate = lastLogoutDate;
+    return await firebaseResponse.ref.update(response);
+  }
+
+  public async updateUserVogCount(request: UpdateUserVogCountRequestDTO) {
+    const { authId, vogCount } = request;
+    const { firebaseResponse, response } = await this.firebaseService.getUserFromFirestoreById(authId);
+    response.vogCount = vogCount;
+    return await firebaseResponse.ref.update(response);
+  }
+
+  public async updateUserVogLikeCount(request: UpdateUserVogLikeCountRequestDTO) {
+    const { authId, vogLikeCount } = request;
+    const { firebaseResponse, response } = await this.firebaseService.getUserFromFirestoreById(authId);
+    response.vogLikeCount = vogLikeCount;
+    return await firebaseResponse.ref.update(response);
+  }
+
+  public async updateUserPostCommentCount(request: UpdateUserPostCommentCountRequestDTO) {
+    const { authId, postCommentCount } = request;
+    const { firebaseResponse, response } = await this.firebaseService.getUserFromFirestoreById(authId);
+    response.postCommentCount = postCommentCount;
+    return await firebaseResponse.ref.update(response);
+  }
+
+  public async updateUserFavoriteBusinessCount(request: UpdateUserFavoriteBusinessCountRequestDTO){
+    const { authId, favoriteBusinessCount } = request;
+    const { firebaseResponse, response } = await this.firebaseService.getUserFromFirestoreById(authId);
+    response.favoriteBusinessCount = favoriteBusinessCount;
+    return await firebaseResponse.ref.update(response);
+  }
+
+  public async updateUserBlogsReadCount(request: UpdateUserBlogsReadCountRequestDTO){
+    const { authId, blogsReadCount } = request;
+    const { firebaseResponse, response } = await this.firebaseService.getUserFromFirestoreById(authId);
+    response.blogsReadCount = blogsReadCount;
+    return await firebaseResponse.ref.update(response);
+  }
+
+  public async updateUserBlogsLikeCount(request: UpdateUserBlogsLikeCountRequestDTO){
+    const { authId, blogsLikeCount } = request;
+    const { firebaseResponse, response } = await this.firebaseService.getUserFromFirestoreById(authId);
+    response.blogsLikeCount = blogsLikeCount;
+    return await firebaseResponse.ref.update(response);
   }
 }

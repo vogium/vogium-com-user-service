@@ -14,6 +14,7 @@ import {
   FIREBASE_ERROR_MESSAGES,
   LOCAL_RETURN_QUERY_TYPES,
 } from 'src/constants/firebase.constants';
+import { collection } from 'firebase/firestore';
 
 @Injectable()
 export class FirebaseService implements OnModuleInit {
@@ -35,7 +36,7 @@ export class FirebaseService implements OnModuleInit {
   // Updating username. First check if it's available or not. Then updating the username and usernameChangedDate to current date.
   async updateUsername(authId: string, username: string) {
     //first check its available or not
-    const fetchResponse = await this.getUserByQuery({
+    const fetchResponse = await this.getSingleResponseByQuery({
       field: 'username',
       operator: '==',
       value: username,
@@ -70,7 +71,7 @@ export class FirebaseService implements OnModuleInit {
 
       //Check multiple
 
-      const fetchDuplicates = await this.getUserByQuery({
+      const fetchDuplicates = await this.getSingleResponseByQuery({
         field: 'username',
         operator: '==',
         value: username,
@@ -197,7 +198,7 @@ export class FirebaseService implements OnModuleInit {
   }
 
   // throw error for checking existance of user with given query params
-  async getUserByQuery(
+  async getSingleResponseByQuery(
     queryParams: FieldParams,
   ): Promise<{ type: string; data: any }> {
     try {
@@ -274,7 +275,125 @@ export class FirebaseService implements OnModuleInit {
     }
   }
 
-  async updateField(userDoc: DocumentData, userData: any) {
-    return await userDoc.ref.update(userData);
+  async getUserResponseByQuery(queryParams?: FieldParams[]){
+    return await this.getResponseByQuery(COLLECTION_NAMES.USERS_COLLECTION, queryParams);
+  }
+
+  async getResponseByQuery(collectionName: string, queryParams?: FieldParams[]): Promise<{ type: string; data: any }> {
+    try {
+      const collectionRef = admin
+        .firestore()
+        .collection(collectionName);
+
+      let query: FirebaseFirestore.Query = collectionRef;
+      if(queryParams && queryParams[0]){
+        queryParams.forEach((param) => {
+        query = query.where(param.field, param.operator, param.value);
+        })
+      }
+      const snapshot = await query.get();
+      if (snapshot.empty) {
+        return {
+          type: LOCAL_RETURN_QUERY_TYPES.NOT_FOUND,
+          data: null,
+        };
+      }
+
+      if (snapshot.docs.length > 1) {
+        return {
+          type: LOCAL_RETURN_QUERY_TYPES.MULTIPLE_RECORDS,
+          data: snapshot.docs.map((doc) => doc.data()),
+        };
+      }
+
+      return {
+        type: LOCAL_RETURN_QUERY_TYPES.SINGLE_RECORD,
+        data: snapshot.docs[0],
+      };
+    } catch (error) {
+      // if (error instanceof HttpException) {
+      //   throw error;
+      // }
+      // throw new InternalServerErrorException({
+      //   message: FIREBASE_ERROR_MESSAGES.UNEXPECTED_ERROR,
+      //   error: error.message,
+      //   stack: error.toString(),
+      // });
+    }
+  }
+  
+  async getResponseByDocKey(collectionName: string, documentKey: string ){
+    try {
+      const documentRef = admin
+        .firestore().collection(collectionName);
+
+      if(!documentRef){
+        throw new Error(`Document Ref with key "${documentKey}" not found in collection "${collectionName}".`);
+      }
+
+      return {
+        type: LOCAL_RETURN_QUERY_TYPES.SINGLE_RECORD,
+        data: documentRef.doc(documentKey)
+      };
+
+    } catch (error) {
+      throw new Error(`Error fetching document: ${error.message}`);
+    }
+  }
+
+  async getFromFirestore(
+    collectionName: string,
+    fieldParams?: FieldParams[],
+  ) {
+    const types = await this.getResponseByQuery(
+      collectionName,
+      fieldParams,
+    );
+    if (!types) {
+      throw new NotFoundException('types response not found');
+    }
+
+    if (types.type !== LOCAL_RETURN_QUERY_TYPES.SINGLE_RECORD) {
+      throw new NotFoundException(
+        types.type === LOCAL_RETURN_QUERY_TYPES.NOT_FOUND
+          ? FIREBASE_ERROR_MESSAGES.USER_NOT_FOUND
+          : FIREBASE_ERROR_MESSAGES.MULTIPLE_USERS,
+      );
+    }
+    const firebaseResponse = types.data;
+    if (!firebaseResponse) {
+      throw new NotFoundException('firebase response not found');
+    }
+    const response = firebaseResponse.data();
+    if (!response) {
+      throw new NotFoundException('response not found');
+    }
+    return {firebaseResponse, response};
+  }
+
+  public async getUserFromFirestoreById(authId: string) {
+    return await this.getFromFirestore(COLLECTION_NAMES.USERS_COLLECTION, [
+      {
+        field: 'authId',
+        operator: '==',
+        value: authId,
+      },
+    ]);
+  }
+
+  public async getUserPreviewFromFirestoreById(authId: string) {
+    const{firebaseResponse, response} = await this.getFromFirestore(COLLECTION_NAMES.USER_PREVIEWS_COLLECTION, [
+      {
+        field: 'authId',
+        operator: '==',
+        value: authId,
+      },
+    ]);
+    return {previewFirebaseResponse: firebaseResponse, previewResponse: response};
+  }
+
+  public convertDateToTimestamp(date: string){
+    const response = new Date(date);
+    return admin.firestore.Timestamp.fromDate(response);
   }
 }

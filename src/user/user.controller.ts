@@ -17,6 +17,25 @@ import { UpdateUserEmailRequestDTO } from './dto/request/update-user-email-reque
 import { UpdateUserGenderRequestDTO } from './dto/request/update-user-gender-request.dto';
 import { UpdateUserIsAccountVerifiedRequestDTO } from './dto/request/update-user-is-account-verified-request-dto';
 import { UpdateUserUsernameRequestDTO } from './dto/request/update-user-username-request.dto';
+import { UpdateUserIsDeletedRequestDTO } from './dto/request/update-user-is-deleted-request.dto';
+import { UpdateUserPhoneNumberRequestDTO } from './dto/request/update-user-phone-number-request.dto';
+import { UpdateUserBirthDateRequestDTO } from './dto/request/update-user-birth-date-request.dto';
+import { UpdateUserAddressRequestDTO } from './dto/request/update-user-address-request.dto';
+import { UpdateUserIsEmailVerifiedRequestDTO } from './dto/request/update-user-is-email-verified-request-dto';
+import { UpdateUserIsPhoneVerifiedRequestDTO } from './dto/request/update-user-is-phone-verified-request-dto';
+import { UpdateUserFollowerCountRequestDTO } from './dto/request/update-user-follower-count-request.dto';
+import { UpdateUserFollowingCountRequestDTO } from './dto/request/update-user-following-count-request.dto';
+import { UpdateUserSubscriberCountRequestDTO } from './dto/request/update-user-subscriber-count-request.dto';
+import { UpdateUserSubscriptionCountRequestDTO } from './dto/request/update-user-subscription-count-request.dto';
+import { UpdateUserTotalExpenditureRequestDTO } from './dto/request/update-user-total-expenditure-request.dto';
+import { UpdateUserLastLoginDateRequestDTO } from './dto/request/update-user-last-login-date-request.dto';
+import { UpdateUserLastLogoutDateRequestDTO } from './dto/request/update-user-last-logout-date-request.dto';
+import { UpdateUserVogCountRequestDTO } from './dto/request/update-user-vog-count-request.dto';
+import { UpdateUserVogLikeCountRequestDTO } from './dto/request/update-user-vog-like-count-request.dto';
+import { UpdateUserPostCommentCountRequestDTO } from './dto/request/update-user-post-comment-count-request.dto';
+import { UpdateUserFavoriteBusinessCountRequestDTO } from './dto/request/update-user-favorite-business-count-request.dto';
+import { UpdateUserBlogsReadCountRequestDTO } from './dto/request/update-user-blogs-read-count-request.dto';
+import { UpdateUserBlogsLikeCountRequestDTO } from './dto/request/update-user-blogs-like-count-request.dto';
 
 @Controller('user')
 export class UserController {
@@ -103,9 +122,103 @@ export class UserController {
   }
 
   @Put('/update/verifyUserAccount')
-  public async updateUserAccountVerified(
-    @Body() request: UpdateUserIsAccountVerifiedRequestDTO,
-  ) {
+  public async updateUserAccountVerified(@Body() request: UpdateUserIsAccountVerifiedRequestDTO) {
     return await this.userService.verifyUserAccount(request);
   }
+
+  @Put('/update/deleteUser')
+  public async deleteUser(@Body() request: UpdateUserIsDeletedRequestDTO) {
+    return await this.userService.deleteUser(request);
+  }
+
+  @Put('/update/phoneNumber')
+  public async updatePhoneNumber(@Body() request: UpdateUserPhoneNumberRequestDTO) {
+    return await this.userService.updatePhoneNumber(request);
+  }
+
+  @Put('/update/birthDate')
+  public async updateBirthDate(@Body() request: UpdateUserBirthDateRequestDTO) {
+    return await this.userService.updateUserBirthDate(request);
+  }
+
+  @Put('/update/userAddress')
+  public async updateUserAddress(@Body() request: UpdateUserAddressRequestDTO) {
+    return await this.userService.updateUserAddress(request);
+  }
+
+  @Put('/update/userIsEmailVerified')
+  public async updateUserIsEmailVerified(@Body() request: UpdateUserIsEmailVerifiedRequestDTO) {
+    return await this.userService.updateUserIsEmailVerified(request);
+  }
+
+  @Put('/update/userIsPhoneVerified')
+  public async updateUserIsPhoneVerified(@Body() request: UpdateUserIsPhoneVerifiedRequestDTO) { 
+    return await this.userService.updateUserIsPhoneVerified(request);
+  }
+
+  @Put('/update/userFollowerCount')
+  public async updateUserFollowerCount(@Body() request: UpdateUserFollowerCountRequestDTO) {
+    return await this.userService.updateUserFollowerCount(request);
+  }
+
+  @Put('/update/userFollowingCount')
+  public async updateUserFollowingCount(@Body() request: UpdateUserFollowingCountRequestDTO) {
+    return await this.userService.updateUserFollowingCount(request);
+  }
+
+  @Put('/update/userSubscriberCount')
+  public async updateUserSubscriberCount(@Body() request: UpdateUserSubscriberCountRequestDTO) {
+    return await this.userService.updateUserSubscriberCount(request);
+  }
+
+  @Put('/update/userSubscriptionCount')
+  public async updateUserSubscriptionCount(@Body() request: UpdateUserSubscriptionCountRequestDTO) {
+    return await this.userService.updateUserSubscriptionCount(request);
+  }
+
+  @Put('/update/userTotalExpenditure')
+  public async updateUserTotalExpenditure(@Body() request: UpdateUserTotalExpenditureRequestDTO) {
+    return await this.userService.updateUserTotalExpenditure(request);
+  }
+
+  @Put('/update/userLastLoginDate')
+  public async updateUserLastLoginDate(@Body() request: UpdateUserLastLoginDateRequestDTO) {
+    return await this.userService.updateUserLastLoginDate(request);
+  }
+
+  @Put('/update/userLastLogoutDate')
+  public async updateUserLastLogoutDate(@Body() request: UpdateUserLastLogoutDateRequestDTO) {
+    return await this.userService.updateUserLastLogoutDate(request);
+  }
+
+  @Put('/update/userVogCount')
+  public async updateUserVogCount(@Body() request: UpdateUserVogCountRequestDTO) {
+    return await this.userService.updateUserVogCount(request);
+  }
+
+  @Put('/update/userVogLikeCount')
+  public async updateUserVogLikeCount(@Body() request: UpdateUserVogLikeCountRequestDTO) {
+    return await this.userService.updateUserVogLikeCount(request);
+  }
+
+  @Put('/update/userPostCommentCount')
+  public async updateUserPostCommentCount(@Body() request: UpdateUserPostCommentCountRequestDTO) {
+    return await this.userService.updateUserPostCommentCount(request);
+  }
+
+  @Put('/update/userFavoriteBusinessCount')
+  public async updateUserFavoriteBusinessCount(@Body() request: UpdateUserFavoriteBusinessCountRequestDTO) {
+    return await this.userService.updateUserFavoriteBusinessCount(request);
+  }
+
+  @Put('/update/userBlogsReadCount')
+  public async updateUserBlogsReadCount(@Body() request: UpdateUserBlogsReadCountRequestDTO) {
+    return await this.userService.updateUserBlogsReadCount(request);
+  }
+
+  @Put('/update/userBlogsLikeCount')
+  public async updateUserBlogsLikeCount(@Body() request: UpdateUserBlogsLikeCountRequestDTO) {
+    return await this.userService.updateUserBlogsLikeCount(request);
+  }
+
 }
