@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Put } from '@nestjs/common';
+import { Body, Controller, Get, Put, Query } from '@nestjs/common';
 import { getUserByEmailRequestDTO } from './dto/request/get-user-by-email-request.dto';
 import { UserService } from './user.service';
 import { UserDTO } from './dto/user.dto';
@@ -36,6 +36,8 @@ import { UpdateUserPostCommentCountRequestDTO } from './dto/request/update-user-
 import { UpdateUserFavoriteBusinessCountRequestDTO } from './dto/request/update-user-favorite-business-count-request.dto';
 import { UpdateUserBlogsReadCountRequestDTO } from './dto/request/update-user-blogs-read-count-request.dto';
 import { UpdateUserBlogsLikeCountRequestDTO } from './dto/request/update-user-blogs-like-count-request.dto';
+import { PaginationQueryDTO } from 'src/firebase/dto/pagination-query.dto';
+import { request } from 'express';
 
 @Controller('user')
 export class UserController {
@@ -68,7 +70,7 @@ export class UserController {
   @Put('/update/userAbout')
   public async updateUserAbout(@Body() request: UpdateUserAboutDto) {
     return await this.userService.updateUserAbout(request);
-  }
+  } 
 
   @Put('/update/userAvatarUrl')
   public async updateUserAvatarUrl(
@@ -221,4 +223,13 @@ export class UserController {
     return await this.userService.updateUserBlogsLikeCount(request);
   }
 
+  @Get('/find/filter')
+  public async paginate(@Query() request: PaginationQueryDTO){
+    return await this.userService.paginate(request);
+  }
+
+  @Get('/find/preview/filter')
+  public async paginatePreview(@Query() request: PaginationQueryDTO){
+    return await this.userService.paginatePreview(request);
+  }
 }

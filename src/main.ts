@@ -13,11 +13,15 @@ async function bootstrap() {
 
   app.useGlobalPipes(
     new ValidationPipe({
-      whitelist: true,
+      whitelist: false,
       transform: true,
-      forbidNonWhitelisted: true,
+      forbidNonWhitelisted: false,
     }),
   );
+
+  app.enableCors({
+    origin: '*', // Tüm originlere izin verir
+  });
   await app.listen(port);
   console.log(`Application is running on: http://localhost:${port}`);
 }

@@ -38,6 +38,8 @@ import { UpdateUserPostCommentCountRequestDTO } from './dto/request/update-user-
 import { UpdateUserFavoriteBusinessCountRequestDTO } from './dto/request/update-user-favorite-business-count-request.dto';
 import { UpdateUserBlogsLikeCountRequestDTO } from './dto/request/update-user-blogs-like-count-request.dto';
 import { UpdateUserBlogsReadCountRequestDTO } from './dto/request/update-user-blogs-read-count-request.dto';
+import { PaginationQueryDTO } from 'src/firebase/dto/pagination-query.dto';
+import { COLLECTION_NAMES } from 'src/constants/firebase.constants';
 
 @Injectable()
 export class UserService {
@@ -342,4 +344,13 @@ export class UserService {
     response.blogsLikeCount = blogsLikeCount;
     return await firebaseResponse.ref.update(response);
   }
+
+  public async paginate(query: PaginationQueryDTO){
+    return await this.firebaseService.paginate(COLLECTION_NAMES.USERS_COLLECTION, query);
+  }
+
+  public async paginatePreview(query: PaginationQueryDTO){
+    return await this.firebaseService.paginate(COLLECTION_NAMES.USER_PREVIEWS_COLLECTION, query);
+  }
+
 }

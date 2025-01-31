@@ -14,7 +14,7 @@ import {
   FIREBASE_ERROR_MESSAGES,
   LOCAL_RETURN_QUERY_TYPES,
 } from 'src/constants/firebase.constants';
-import { collection } from 'firebase/firestore';
+import { PaginationQueryDTO } from './dto/pagination-query.dto';
 
 @Injectable()
 export class FirebaseService implements OnModuleInit {
@@ -395,5 +395,55 @@ export class FirebaseService implements OnModuleInit {
   public convertDateToTimestamp(date: string){
     const response = new Date(date);
     return admin.firestore.Timestamp.fromDate(response);
+  }
+
+  async paginate(collectionName: string, query: PaginationQueryDTO) {
+    const { _start = 0, _end = 10, ...filters } = query;
+    const collectionRef =  admin.firestore().collection(collectionName);
+
+    let firebaseQuery: FirebaseFirestore.Query = collectionRef;
+
+    Object.keys(filters).forEach((key) => {
+      const value = filters[key];
+      if (value) {
+        const parsedValue = this.parseQueryParam(value);
+        firebaseQuery = firebaseQuery.where(key, '==', parsedValue)
+      }
+    });
+    
+    // Pagination işlemi
+    const limit = _end - _start;
+    let snapshot = await firebaseQuery.get();
+    const totalRecords = snapshot.size;
+    firebaseQuery = firebaseQuery.limit(limit).offset(Number(_start));
+    snapshot = await firebaseQuery.get();
+    const data = snapshot.docs.map(doc => doc.data());
+
+    return {
+      data,
+      meta: {
+        totalRecords,
+        totalPages: Math.ceil(totalRecords / (limit)),
+        pageSize: limit,
+        currentPage: Math.floor(_start / limit) + 1,
+      },
+    };
+  }
+
+  private parseQueryParam(param: string | undefined): boolean | number | string | undefined {
+    if (param === undefined) return undefined;
+  
+    // Boolean dönüşümü
+    if (param === 'true' || param === 'false') {
+      return param === 'true';
+    }
+  
+    // Number dönüşümü
+    if (!isNaN(Number(param))) {
+      return Number(param);
+    }
+  
+    // String olarak bırak
+    return param;
   }
 }
