@@ -7,7 +7,7 @@ import {
   NotFoundException,
   OnModuleInit,
 } from '@nestjs/common';
-import { DocumentData, FieldValue } from 'firebase-admin/firestore';
+import { DocumentData, FieldValue, Timestamp } from 'firebase-admin/firestore';
 import { FieldParams } from './dto/request-field-params.dto';
 import {
   COLLECTION_NAMES,
@@ -18,12 +18,22 @@ import { PaginationQueryDTO } from './dto/pagination-query.dto';
 
 @Injectable()
 export class FirebaseService implements OnModuleInit {
+  private static isInitialized = false;
+
   onModuleInit() {
-    if (!admin.apps.length) {
-      const serviceAccount = require('../../firebase-admin.json');
-      admin.initializeApp({
-        credential: admin.credential.cert(serviceAccount),
-      });
+    this.initializeFirebase();
+  }
+
+  private initializeFirebase() {
+    if (!FirebaseService.isInitialized) {
+      if (!admin.apps.length) {
+        // eslint-disable-next-line @typescript-eslint/no-require-imports
+        const serviceAccount = require('../../firebase-admin.json');
+        admin.initializeApp({
+          credential: admin.credential.cert(serviceAccount),
+        });
+      }
+      FirebaseService.isInitialized = true;
     }
   }
 
@@ -229,6 +239,7 @@ export class FirebaseService implements OnModuleInit {
         type: LOCAL_RETURN_QUERY_TYPES.SINGLE_RECORD,
         data: snapshot.docs[0],
       };
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (error) {
       // if (error instanceof HttpException) {
       //   throw error;
@@ -262,7 +273,7 @@ export class FirebaseService implements OnModuleInit {
         });
       }
 
-      return snapshot.docs.map((doc) => doc.data()) as DocumentData[];
+      return snapshot.docs.map((doc) => this.convertTimestamps(doc.data()));
     } catch (error) {
       if (error instanceof HttpException) {
         throw error;
@@ -275,21 +286,25 @@ export class FirebaseService implements OnModuleInit {
     }
   }
 
-  async getUserResponseByQuery(queryParams?: FieldParams[]){
-    return await this.getResponseByQuery(COLLECTION_NAMES.USERS_COLLECTION, queryParams);
+  async getUserResponseByQuery(queryParams?: FieldParams[]) {
+    return await this.getResponseByQuery(
+      COLLECTION_NAMES.USERS_COLLECTION,
+      queryParams,
+    );
   }
 
-  async getResponseByQuery(collectionName: string, queryParams?: FieldParams[]): Promise<{ type: string; data: any }> {
+  async getResponseByQuery(
+    collectionName: string,
+    queryParams?: FieldParams[],
+  ): Promise<{ type: string; data: any }> {
     try {
-      const collectionRef = admin
-        .firestore()
-        .collection(collectionName);
+      const collectionRef = admin.firestore().collection(collectionName);
 
       let query: FirebaseFirestore.Query = collectionRef;
-      if(queryParams && queryParams[0]){
+      if (queryParams && queryParams[0]) {
         queryParams.forEach((param) => {
-        query = query.where(param.field, param.operator, param.value);
-        })
+          query = query.where(param.field, param.operator, param.value);
+        });
       }
       const snapshot = await query.get();
       if (snapshot.empty) {
@@ -310,6 +325,7 @@ export class FirebaseService implements OnModuleInit {
         type: LOCAL_RETURN_QUERY_TYPES.SINGLE_RECORD,
         data: snapshot.docs[0],
       };
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (error) {
       // if (error instanceof HttpException) {
       //   throw error;
@@ -321,34 +337,28 @@ export class FirebaseService implements OnModuleInit {
       // });
     }
   }
-  
-  async getResponseByDocKey(collectionName: string, documentKey: string ){
-    try {
-      const documentRef = admin
-        .firestore().collection(collectionName);
 
-      if(!documentRef){
-        throw new Error(`Document Ref with key "${documentKey}" not found in collection "${collectionName}".`);
+  async getResponseByDocKey(collectionName: string, documentKey: string) {
+    try {
+      const documentRef = admin.firestore().collection(collectionName);
+
+      if (!documentRef) {
+        throw new Error(
+          `Document Ref with key "${documentKey}" not found in collection "${collectionName}".`,
+        );
       }
 
       return {
         type: LOCAL_RETURN_QUERY_TYPES.SINGLE_RECORD,
-        data: documentRef.doc(documentKey)
+        data: documentRef.doc(documentKey),
       };
-
     } catch (error) {
       throw new Error(`Error fetching document: ${error.message}`);
     }
   }
 
-  async getFromFirestore(
-    collectionName: string,
-    fieldParams?: FieldParams[],
-  ) {
-    const types = await this.getResponseByQuery(
-      collectionName,
-      fieldParams,
-    );
+  async getFromFirestore(collectionName: string, fieldParams?: FieldParams[]) {
+    const types = await this.getResponseByQuery(collectionName, fieldParams);
     if (!types) {
       throw new NotFoundException('types response not found');
     }
@@ -368,7 +378,7 @@ export class FirebaseService implements OnModuleInit {
     if (!response) {
       throw new NotFoundException('response not found');
     }
-    return {firebaseResponse, response};
+    return { firebaseResponse, response };
   }
 
   public async getUserFromFirestoreById(authId: string) {
@@ -382,68 +392,194 @@ export class FirebaseService implements OnModuleInit {
   }
 
   public async getUserPreviewFromFirestoreById(authId: string) {
-    const{firebaseResponse, response} = await this.getFromFirestore(COLLECTION_NAMES.USER_PREVIEWS_COLLECTION, [
-      {
-        field: 'authId',
-        operator: '==',
-        value: authId,
-      },
-    ]);
-    return {previewFirebaseResponse: firebaseResponse, previewResponse: response};
+    const { firebaseResponse, response } = await this.getFromFirestore(
+      COLLECTION_NAMES.USER_PREVIEWS_COLLECTION,
+      [
+        {
+          field: 'authId',
+          operator: '==',
+          value: authId,
+        },
+      ],
+    );
+    return {
+      previewFirebaseResponse: firebaseResponse,
+      previewResponse: response,
+    };
   }
 
-  public convertDateToTimestamp(date: string){
+  public convertDateToTimestamp(date: string) {
     const response = new Date(date);
     return admin.firestore.Timestamp.fromDate(response);
   }
 
   async paginate(collectionName: string, query: PaginationQueryDTO) {
-    const { _start = 0, _end = 10, ...filters } = query;
-    const collectionRef =  admin.firestore().collection(collectionName);
+    const { start = 0, end = 10, sort, order, filters } = query;
+
+    const collectionRef = admin.firestore().collection(collectionName);
 
     let firebaseQuery: FirebaseFirestore.Query = collectionRef;
 
-    Object.keys(filters).forEach((key) => {
-      const value = filters[key];
-      if (value) {
-        const parsedValue = this.parseQueryParam(value);
-        firebaseQuery = firebaseQuery.where(key, '==', parsedValue)
-      }
-    });
-    
+    if (filters && filters.length > 0) {
+      Object.keys(filters).forEach((key) => {
+        const filter = filters[key];
+
+        if (filter) {
+          firebaseQuery = firebaseQuery.where(
+            filter.field,
+            filter.operator,
+            filter.value,
+          );
+        }
+      });
+    }
+
     // Pagination işlemi
-    const limit = _end - _start;
+    const limit = end - start;
     let snapshot = await firebaseQuery.get();
+
     const totalRecords = snapshot.size;
-    firebaseQuery = firebaseQuery.limit(limit).offset(Number(_start));
+    firebaseQuery = firebaseQuery.limit(limit).offset(Number(start));
+
+    if (sort && order && sort !== '')
+      firebaseQuery = firebaseQuery.orderBy(sort, order);
+
     snapshot = await firebaseQuery.get();
-    const data = snapshot.docs.map(doc => doc.data());
+
+    const data = snapshot.docs.map((doc) => doc.data());
 
     return {
       data,
       meta: {
         totalRecords,
-        totalPages: Math.ceil(totalRecords / (limit)),
+        totalPages: Math.ceil(totalRecords / limit),
         pageSize: limit,
-        currentPage: Math.floor(_start / limit) + 1,
+        currentPage: Math.floor(start / limit) + 1,
       },
     };
   }
 
-  private parseQueryParam(param: string | undefined): boolean | number | string | undefined {
-    if (param === undefined) return undefined;
-  
-    // Boolean dönüşümü
-    if (param === 'true' || param === 'false') {
-      return param === 'true';
+  private convertTimestampsToISO<T>(data: T): T {
+    if (Array.isArray(data)) {
+      return data.map((item) =>
+        this.convertTimestampsToISO(item),
+      ) as unknown as T;
+    } else if (data && typeof data === 'object') {
+      const transformedObject: any = {};
+      for (const key in data) {
+        if (data[key] instanceof Timestamp) {
+          transformedObject[key] = data[key].toDate().toISOString();
+        } else if (typeof data[key] === 'object') {
+          transformedObject[key] = this.convertTimestampsToISO(data[key]);
+        } else {
+          transformedObject[key] = data[key];
+        }
+      }
+      return transformedObject as T;
     }
-  
-    // Number dönüşümü
-    if (!isNaN(Number(param))) {
-      return Number(param);
+    return data;
+  }
+
+  private isFirestoreTimestamp(
+    obj: any,
+  ): obj is { seconds: number; nanoseconds: number } {
+    return (
+      obj &&
+      typeof obj === 'object' &&
+      typeof obj.seconds === 'number' &&
+      typeof obj.nanoseconds === 'number'
+    );
+  }
+
+  private convertTimestamps<T>(data: T): T {
+    if (Array.isArray(data)) {
+      return data.map((item) => this.convertTimestamps(item)) as T;
     }
-  
-    // String olarak bırak
-    return param;
+
+    if (typeof data === 'object' && data !== null) {
+      return Object.keys(data).reduce((acc, key) => {
+        const value = data[key];
+
+        if (this.isFirestoreTimestamp(value)) {
+          acc[key] = new Timestamp(value.seconds, value.nanoseconds)
+            .toDate()
+            .toISOString();
+        } else if (typeof value === 'object') {
+          acc[key] = this.convertTimestamps(value); // İç içe objeleri de dönüştür
+        } else {
+          acc[key] = value;
+        }
+
+        return acc;
+      }, {} as any);
+    }
+
+    return data;
+  }
+
+  public async uploadFileFromBase64(
+    fieldName: string,
+    base64String: string,
+    id: string,
+  ): Promise<string> {
+    // Eğer base64 string bir URL ise, direk olarak geri dönüyoruz
+    if (
+      base64String.startsWith('http://') ||
+      base64String.startsWith('https://')
+    ) {
+      return base64String;
+    }
+
+    // Base64 string'den mime type ve veri kısmını ayıklıyoruz
+    const matches = base64String.match(/^data:(.+);base64,(.*)$/);
+    if (!matches) {
+      throw new Error('Geçersiz base64 string formatı');
+    }
+
+    const mimeType = matches[1];
+    const base64Data = matches[2];
+
+    // Dosya uzantısını belirliyoruz
+    const fileExtension = mimeType.split('/')[1];
+
+    // Dosyanın yükleneceği yolu belirliyoruz
+    const filePath = `events/${id}/${fieldName}.${fileExtension}`;
+
+    // Base64 verisini binary formatına çeviriyoruz
+    const buffer = Buffer.from(base64Data, 'base64');
+
+    // Firebase Storage'a dosya yüklemek için dosya referansını alıyoruz
+    const fileUpload = admin
+      .storage()
+      .bucket('vogium.appspot.com')
+      .file(filePath);
+
+    console.log(
+      fileUpload.baseUrl,
+      fileUpload.cloudStorageURI,
+      fileUpload.bucket,
+    );
+    try {
+      // Dosyayı yükleme işlemi
+      await fileUpload.save(buffer, {
+        metadata: {
+          contentType: mimeType, // Dosyanın MIME tipini belirtiyoruz
+        },
+        public: true, // Dosyanın herkese açık olmasını sağlıyoruz
+      });
+
+      // Dosya yolu için encode işlemi
+      const encodedFilePath = encodeURIComponent(filePath);
+
+      // Yüklenen dosyanın URL'sini oluşturuyoruz
+      const fileUrl = `https://firebasestorage.googleapis.com/v0/b/vogium.appspot.com/o/${encodedFilePath}?alt=media&token=${fileUpload.metadata?.generation}`;
+
+      // URL'yi geri döndürüyoruz
+      return fileUrl;
+    } catch (error) {
+      // Hata durumunda, hatayı logluyoruz ve yeniden fırlatıyoruz
+      console.error('File upload error: ', error);
+      throw new Error(`Dosya yükleme hatası: ${error.message}`);
+    }
   }
 }

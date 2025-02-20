@@ -1,12 +1,24 @@
-import { IsOptional, IsNumber, ValidateNested, IsObject } from 'class-validator';
+import { IsOptional } from 'class-validator';
+import { FieldParams } from './request-field-params.dto';
+import { OrderByDirection } from 'firebase-admin/firestore';
 
 export class PaginationQueryDTO {
   @IsOptional()
-  _start?: number;
+  start?: number;
 
   @IsOptional()
-  _end?: number;
+  end?: number;
 
   @IsOptional()
-  filter: string;
+  sort?: string;
+
+  @IsOptional()
+  order?: OrderByDirection;
+
+  @IsOptional()
+  filters?: FieldParams[];
+
+  //todo esgeçildi..algolia ile beraberinde kullanılacak.
+  @IsOptional()
+  searchText: string;
 }
