@@ -1,291 +1,30 @@
 import * as admin from 'firebase-admin';
-import {
-  HttpException,
-  HttpStatus,
-  Injectable,
-  InternalServerErrorException,
-  NotFoundException,
-  OnModuleInit,
-} from '@nestjs/common';
-import { DocumentData, FieldValue, Timestamp } from 'firebase-admin/firestore';
+import { Injectable, NotFoundException, OnModuleInit } from '@nestjs/common';
 import { FieldParams } from './dto/request-field-params.dto';
+import { instanceToPlain } from 'class-transformer';
+import { PaginationQueryDTO } from './dto/pagination-query.dto';
 import {
   COLLECTION_NAMES,
-  FIREBASE_ERROR_MESSAGES,
   LOCAL_RETURN_QUERY_TYPES,
 } from 'src/constants/firebase.constants';
-import { PaginationQueryDTO } from './dto/pagination-query.dto';
+import { DocumentReference } from 'firebase-admin/firestore';
 
 @Injectable()
 export class FirebaseService implements OnModuleInit {
-  private static isInitialized = false;
+  private bucket!: admin.storage.Storage;
 
-  onModuleInit() {
-    this.initializeFirebase();
-  }
-
-  private initializeFirebase() {
-    if (!FirebaseService.isInitialized) {
-      if (!admin.apps.length) {
-        // eslint-disable-next-line @typescript-eslint/no-require-imports
-        const serviceAccount = require('../../firebase-admin.json');
-        admin.initializeApp({
-          credential: admin.credential.cert(serviceAccount),
-        });
-      }
-      FirebaseService.isInitialized = true;
-    }
-  }
-
-  //get all users
-  async getAllUsers(fieldParams: FieldParams[]) {
-    const users = await this.getUsersByQuery(fieldParams);
-    return users;
-  }
-
-  // Updating username. First check if it's available or not. Then updating the username and usernameChangedDate to current date.
-  async updateUsername(authId: string, username: string) {
-    //first check its available or not
-    const fetchResponse = await this.getSingleResponseByQuery({
-      field: 'username',
-      operator: '==',
-      value: username,
-    });
-    //todo responselarda isSucces kullanılmış.
-    // if username is not available, throw error, MULTIPLE_RECORDS means there are multiple users with the same username. NOT_FOUND means username is available. SUCCESS means username is available.
-    if (fetchResponse.type !== LOCAL_RETURN_QUERY_TYPES.NOT_FOUND) {
-      throw new HttpException(
-        {
-          message: FIREBASE_ERROR_MESSAGES.USERNAME_ALREADY_EXISTS,
-          cause: `Username: ${username} is already taken`,
-          isSucces: false,
-        },
-        HttpStatus.BAD_REQUEST,
-      );
-    }
-    try {
-      await admin
-        .firestore()
-        .collection(COLLECTION_NAMES.USERS_COLLECTION)
-        .doc(authId)
-        .update({
-          username,
-          usernameChangedDate: FieldValue.serverTimestamp(),
-        });
-
-      await admin
-        .firestore()
-        .collection(COLLECTION_NAMES.USER_PREVIEWS_COLLECTION)
-        .doc(authId)
-        .update({ username });
-
-      //Check multiple
-
-      const fetchDuplicates = await this.getSingleResponseByQuery({
-        field: 'username',
-        operator: '==',
-        value: username,
-      });
-
-      const isDuplicate =
-        fetchDuplicates.type === LOCAL_RETURN_QUERY_TYPES.MULTIPLE_RECORDS;
-
-      if (isDuplicate) {
-        await admin
-          .firestore()
-          .collection(COLLECTION_NAMES.USERS_COLLECTION)
-          .doc(authId)
-          .update({
-            username: null,
-            usernameChangedDate: null,
-          });
-
-        await admin
-          .firestore()
-          .collection(COLLECTION_NAMES.USER_PREVIEWS_COLLECTION)
-          .doc(authId)
-          .update({
-            username: null,
-          });
-
-        throw new HttpException(
-          {
-            message: FIREBASE_ERROR_MESSAGES.USERNAME_ALREADY_EXISTS,
-            cause: `Username: ${username} is already taken`,
-          },
-          HttpStatus.BAD_REQUEST,
-        );
-      }
-
-      return {
-        isSucces: !isDuplicate,
-      };
-    } catch (error) {
-      throw new HttpException(
-        {
-          message: FIREBASE_ERROR_MESSAGES.UNEXPECTED_ERROR,
-          error: error.message,
-        },
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
-    }
-  }
-
-  async updateUserInUserPreviewsCollection<T>(
-    authId: string,
-    userData: Partial<T>,
-  ) {
-    // const userDoc = await this.getUserByAuthId(authId);
-
-    const dataNew = JSON.parse(JSON.stringify(userData));
-    try {
-      await admin
-        .firestore()
-        .collection(COLLECTION_NAMES.USER_PREVIEWS_COLLECTION)
-        .doc(authId)
-        .update(dataNew);
-
-      return {
-        isSuccess: true,
-        data: {
-          // ...userDoc,
-          ...userData,
-        },
-      };
-    } catch (error) {
-      return {
-        isSuccess: false,
-        error: error.message,
-      };
-    }
-  }
-
-  async updateRealname(authId: string, realname: string) {
-    try {
-      await admin
-        .firestore()
-        .collection(COLLECTION_NAMES.USERS_COLLECTION)
-        .doc(authId)
-        .update({
-          realname,
-        });
-
-      await admin
-        .firestore()
-        .collection(COLLECTION_NAMES.USER_PREVIEWS_COLLECTION)
-        .doc(authId)
-        .update({ realname });
-
-      return {
-        isSucces: true,
-      };
-    } catch (error) {
-      throw new HttpException(
-        {
-          message: FIREBASE_ERROR_MESSAGES.UNEXPECTED_ERROR,
-          error: error.message,
-          isSucces: false,
-        },
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
-    }
-  }
-
-  async getUserByEmail(email: string): Promise<DocumentData> {
-    const usersRef = admin
-      .firestore()
-      .collection(COLLECTION_NAMES.USERS_COLLECTION);
-    const snapshot = await usersRef.where('emailAddress', '==', email).get();
-    // const snapshot = undefined;
-
-    if (snapshot.empty) {
-      throw new NotFoundException(FIREBASE_ERROR_MESSAGES.USER_NOT_FOUND, {
-        cause: `User not found for email: ${email}`,
+  async onModuleInit() {
+    if (!admin.apps.length) {
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
+      const serviceAccount = require('../../firebase-admin.json');
+      admin.initializeApp({
+        credential: admin.credential.cert(serviceAccount),
+        storageBucket: 'vogium.appspot.com', // Bucket adını ekliyoruz
       });
     }
 
-    return snapshot.docs[0].data();
+    this.bucket = admin.storage();
   }
-
-  // throw error for checking existance of user with given query params
-  async getSingleResponseByQuery(
-    queryParams: FieldParams,
-  ): Promise<{ type: string; data: any }> {
-    try {
-      const collectionRef = admin
-        .firestore()
-        .collection(COLLECTION_NAMES.USERS_COLLECTION);
-
-      const snapshot = await collectionRef
-        .where(queryParams.field, queryParams.operator, queryParams.value)
-        .get();
-
-      if (snapshot.empty) {
-        return {
-          type: LOCAL_RETURN_QUERY_TYPES.NOT_FOUND,
-          data: null,
-        };
-      }
-
-      //birden fazla kullanıcı varsa
-      if (snapshot.docs.length > 1) {
-        return {
-          type: LOCAL_RETURN_QUERY_TYPES.MULTIPLE_RECORDS,
-          data: snapshot.docs,
-        };
-      }
-
-      return {
-        type: LOCAL_RETURN_QUERY_TYPES.SINGLE_RECORD,
-        data: snapshot.docs[0],
-      };
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    } catch (error) {
-      // if (error instanceof HttpException) {
-      //   throw error;
-      // }
-      // throw new InternalServerErrorException({
-      //   message: FIREBASE_ERROR_MESSAGES.UNEXPECTED_ERROR,
-      //   error: error.message,
-      //   stack: error.toString(),
-      // });
-    }
-  }
-
-  async getUsersByQuery(queryParams: FieldParams[]): Promise<DocumentData[]> {
-    try {
-      const collectionRef = admin
-        .firestore()
-        .collection(COLLECTION_NAMES.USERS_COLLECTION);
-
-      let query: FirebaseFirestore.Query = collectionRef;
-      queryParams.forEach((param) => {
-        query = query.where(param.field, param.operator, param.value);
-      });
-
-      const snapshot = await query.get();
-
-      if (snapshot.empty) {
-        throw new NotFoundException(FIREBASE_ERROR_MESSAGES.USER_NOT_FOUND, {
-          cause: `${FIREBASE_ERROR_MESSAGES.USER_NOT_FOUND} for ${queryParams
-            .map((param) => `${param.field}: ${param.value}`)
-            .join(', ')}`,
-        });
-      }
-
-      return snapshot.docs.map((doc) => this.convertTimestamps(doc.data()));
-    } catch (error) {
-      if (error instanceof HttpException) {
-        throw error;
-      }
-
-      throw new InternalServerErrorException({
-        message: FIREBASE_ERROR_MESSAGES.UNEXPECTED_ERROR,
-        error: error.message,
-      });
-    }
-  }
-
   async getUserResponseByQuery(queryParams?: FieldParams[]) {
     return await this.getResponseByQuery(
       COLLECTION_NAMES.USERS_COLLECTION,
@@ -317,7 +56,7 @@ export class FirebaseService implements OnModuleInit {
       if (snapshot.docs.length > 1) {
         return {
           type: LOCAL_RETURN_QUERY_TYPES.MULTIPLE_RECORDS,
-          data: snapshot.docs.map((doc) => doc.data()),
+          data: snapshot.docs,
         };
       }
 
@@ -338,23 +77,25 @@ export class FirebaseService implements OnModuleInit {
     }
   }
 
-  async getResponseByDocKey(collectionName: string, documentKey: string) {
-    try {
-      const documentRef = admin.firestore().collection(collectionName);
+  async getUserFromFirestore(fieldParams?: FieldParams[]) {
+    return await this.getFromFirestore(
+      COLLECTION_NAMES.USERS_COLLECTION,
+      fieldParams,
+    );
+  }
 
-      if (!documentRef) {
-        throw new Error(
-          `Document Ref with key "${documentKey}" not found in collection "${collectionName}".`,
-        );
-      }
+  async getUserPreviewFromFirestore(fieldParams?: FieldParams[]) {
+    return await this.getFromFirestore(
+      COLLECTION_NAMES.USER_PREVIEWS_COLLECTION,
+      fieldParams,
+    );
+  }
 
-      return {
-        type: LOCAL_RETURN_QUERY_TYPES.SINGLE_RECORD,
-        data: documentRef.doc(documentKey),
-      };
-    } catch (error) {
-      throw new Error(`Error fetching document: ${error.message}`);
-    }
+  async getModeratorFromFirestore(fieldParams?: FieldParams[]) {
+    return await this.getFromFirestore(
+      COLLECTION_NAMES.USERS_COLLECTION,
+      fieldParams,
+    );
   }
 
   async getFromFirestore(collectionName: string, fieldParams?: FieldParams[]) {
@@ -362,15 +103,16 @@ export class FirebaseService implements OnModuleInit {
     if (!types) {
       throw new NotFoundException('types response not found');
     }
-
-    if (types.type !== LOCAL_RETURN_QUERY_TYPES.SINGLE_RECORD) {
-      throw new NotFoundException(
-        types.type === LOCAL_RETURN_QUERY_TYPES.NOT_FOUND
-          ? FIREBASE_ERROR_MESSAGES.USER_NOT_FOUND
-          : FIREBASE_ERROR_MESSAGES.MULTIPLE_USERS,
-      );
-    }
     const firebaseResponse = types.data;
+
+    if (types.type === LOCAL_RETURN_QUERY_TYPES.MULTIPLE_RECORDS) {
+      const response = firebaseResponse.map((doc: { data: () => any }) =>
+        doc.data(),
+      );
+
+      return { firebaseResponse, response };
+    }
+
     if (!firebaseResponse) {
       throw new NotFoundException('firebase response not found');
     }
@@ -381,31 +123,36 @@ export class FirebaseService implements OnModuleInit {
     return { firebaseResponse, response };
   }
 
-  public async getUserFromFirestoreById(authId: string) {
-    return await this.getFromFirestore(COLLECTION_NAMES.USERS_COLLECTION, [
-      {
-        field: 'authId',
-        operator: '==',
-        value: authId,
-      },
-    ]);
+  public getRef() {
+    const ref = admin
+      .firestore()
+      .collection(COLLECTION_NAMES.USERS_COLLECTION)
+      .doc();
+    return ref;
   }
 
-  public async getUserPreviewFromFirestoreById(authId: string) {
-    const { firebaseResponse, response } = await this.getFromFirestore(
-      COLLECTION_NAMES.USER_PREVIEWS_COLLECTION,
-      [
-        {
-          field: 'authId',
-          operator: '==',
-          value: authId,
-        },
-      ],
-    );
-    return {
-      previewFirebaseResponse: firebaseResponse,
-      previewResponse: response,
-    };
+  public async createOnFirestore<T>(
+    collectionName: string,
+    request: T,
+    ref?: DocumentReference,
+  ) {
+    try {
+      let docRef: DocumentReference;
+      if (ref) {
+        docRef = ref;
+      } else {
+        docRef = admin.firestore().collection(collectionName).doc();
+      }
+
+      const requestData = instanceToPlain(request);
+
+      const data = { ...requestData, id: docRef.id };
+
+      await docRef.set(data);
+      return docRef.id;
+    } catch (error) {
+      throw new Error(`Error creating in ${collectionName}: ${error.message}`);
+    }
   }
 
   public convertDateToTimestamp(date: string) {
@@ -459,64 +206,6 @@ export class FirebaseService implements OnModuleInit {
     };
   }
 
-  private convertTimestampsToISO<T>(data: T): T {
-    if (Array.isArray(data)) {
-      return data.map((item) =>
-        this.convertTimestampsToISO(item),
-      ) as unknown as T;
-    } else if (data && typeof data === 'object') {
-      const transformedObject: any = {};
-      for (const key in data) {
-        if (data[key] instanceof Timestamp) {
-          transformedObject[key] = data[key].toDate().toISOString();
-        } else if (typeof data[key] === 'object') {
-          transformedObject[key] = this.convertTimestampsToISO(data[key]);
-        } else {
-          transformedObject[key] = data[key];
-        }
-      }
-      return transformedObject as T;
-    }
-    return data;
-  }
-
-  private isFirestoreTimestamp(
-    obj: any,
-  ): obj is { seconds: number; nanoseconds: number } {
-    return (
-      obj &&
-      typeof obj === 'object' &&
-      typeof obj.seconds === 'number' &&
-      typeof obj.nanoseconds === 'number'
-    );
-  }
-
-  private convertTimestamps<T>(data: T): T {
-    if (Array.isArray(data)) {
-      return data.map((item) => this.convertTimestamps(item)) as T;
-    }
-
-    if (typeof data === 'object' && data !== null) {
-      return Object.keys(data).reduce((acc, key) => {
-        const value = data[key];
-
-        if (this.isFirestoreTimestamp(value)) {
-          acc[key] = new Timestamp(value.seconds, value.nanoseconds)
-            .toDate()
-            .toISOString();
-        } else if (typeof value === 'object') {
-          acc[key] = this.convertTimestamps(value); // İç içe objeleri de dönüştür
-        } else {
-          acc[key] = value;
-        }
-
-        return acc;
-      }, {} as any);
-    }
-
-    return data;
-  }
-
   public async uploadFileFromBase64(
     fieldName: string,
     base64String: string,
@@ -543,7 +232,7 @@ export class FirebaseService implements OnModuleInit {
     const fileExtension = mimeType.split('/')[1];
 
     // Dosyanın yükleneceği yolu belirliyoruz
-    const filePath = `events/${id}/${fieldName}.${fileExtension}`;
+    const filePath = `users/${id}/${fieldName}.${fileExtension}`;
 
     // Base64 verisini binary formatına çeviriyoruz
     const buffer = Buffer.from(base64Data, 'base64');

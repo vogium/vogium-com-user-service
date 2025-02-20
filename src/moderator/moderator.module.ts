@@ -1,13 +1,13 @@
 import { Module } from '@nestjs/common';
 import { FirebaseModule } from 'src/firebase/firebase.module';
 import { FirebaseService } from 'src/firebase/firebase.service';
-import { UserController } from './user.controller';
-import { UserService } from './user.service';
 import { UtilService } from 'src/util/util.service';
+import { ModeratorController } from './moderator.controller';
+import { ModeratorService } from './moderator.service';
 
 @Module({
   imports: [FirebaseModule],
-  controllers: [UserController],
-  providers: [UserService, FirebaseService, UtilService],
+  controllers: [ModeratorController],
+  providers: [ModeratorService, FirebaseService, UtilService],
 })
-export class UserModule {}
+export class ModeratorModule {}

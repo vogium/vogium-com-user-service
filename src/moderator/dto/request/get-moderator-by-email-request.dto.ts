@@ -1,6 +1,6 @@
 import { IsNotEmpty } from 'class-validator';
 
-export class GetUserByEmailRequestDTO {
+export class GetModeratorByEmailRequestDTO {
   @IsNotEmpty()
   private _email: string;
 

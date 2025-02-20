@@ -1,6 +1,7 @@
 export const COLLECTION_NAMES = {
   USERS_COLLECTION: 'users',
   USER_PREVIEWS_COLLECTION: 'userPreviews',
+  MODERATORS_COLLECTION: 'moderators',
 };
 
 export const FIREBASE_ERROR_MESSAGES = {

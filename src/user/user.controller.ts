@@ -1,8 +1,7 @@
 import { Body, Controller, Get, Put, Query } from '@nestjs/common';
-import { getUserByEmailRequestDTO } from './dto/request/get-user-by-email-request.dto';
+import { GetUserByEmailRequestDTO } from './dto/request/get-user-by-email-request.dto';
 import { UserService } from './user.service';
 import { UserDTO } from './dto/user.dto';
-import { GetAllUsersByFieldRequestDTO } from './dto/request/get-all-users-by-params-request.dto';
 import { GetAllUsersResponseDTO } from './dto/response/get-all-users-response.dto';
 import { UpdateUserRealnameRequestDTO } from './dto/request/update-user-realname-request.dto';
 import { UpdateUserAccountTypeRequestDTO } from './dto/request/update-user-account-type-request.dto';
@@ -37,7 +36,6 @@ import { UpdateUserFavoriteBusinessCountRequestDTO } from './dto/request/update-
 import { UpdateUserBlogsReadCountRequestDTO } from './dto/request/update-user-blogs-read-count-request.dto';
 import { UpdateUserBlogsLikeCountRequestDTO } from './dto/request/update-user-blogs-like-count-request.dto';
 import { PaginationQueryDTO } from 'src/firebase/dto/pagination-query.dto';
-import { request } from 'express';
 
 @Controller('user')
 export class UserController {
@@ -45,7 +43,7 @@ export class UserController {
 
   @Get('/find/byEmail')
   public async getUserByEmail(
-    @Body() request: getUserByEmailRequestDTO,
+    @Body() request: GetUserByEmailRequestDTO,
   ): Promise<UserDTO> {
     return await this.userService.getUserByEmail(request);
   }
@@ -56,10 +54,8 @@ export class UserController {
   }
 
   @Get('/find/all')
-  public async getAllUsers(
-    @Body() request: GetAllUsersByFieldRequestDTO,
-  ): Promise<GetAllUsersResponseDTO[]> {
-    return await this.userService.getAllUsers(request.fieldParams || []);
+  public async getAllUsers(): Promise<GetAllUsersResponseDTO[]> {
+    return await this.userService.getAllUsers();
   }
 
   @Put('/update/deactivateUserAccount')
@@ -70,7 +66,7 @@ export class UserController {
   @Put('/update/userAbout')
   public async updateUserAbout(@Body() request: UpdateUserAboutDto) {
     return await this.userService.updateUserAbout(request);
-  } 
+  }
 
   @Put('/update/userAvatarUrl')
   public async updateUserAvatarUrl(
@@ -124,7 +120,9 @@ export class UserController {
   }
 
   @Put('/update/verifyUserAccount')
-  public async updateUserAccountVerified(@Body() request: UpdateUserIsAccountVerifiedRequestDTO) {
+  public async updateUserAccountVerified(
+    @Body() request: UpdateUserIsAccountVerifiedRequestDTO,
+  ) {
     return await this.userService.verifyUserAccount(request);
   }
 
@@ -134,7 +132,9 @@ export class UserController {
   }
 
   @Put('/update/phoneNumber')
-  public async updatePhoneNumber(@Body() request: UpdateUserPhoneNumberRequestDTO) {
+  public async updatePhoneNumber(
+    @Body() request: UpdateUserPhoneNumberRequestDTO,
+  ) {
     return await this.userService.updatePhoneNumber(request);
   }
 
@@ -149,87 +149,117 @@ export class UserController {
   }
 
   @Put('/update/userIsEmailVerified')
-  public async updateUserIsEmailVerified(@Body() request: UpdateUserIsEmailVerifiedRequestDTO) {
+  public async updateUserIsEmailVerified(
+    @Body() request: UpdateUserIsEmailVerifiedRequestDTO,
+  ) {
     return await this.userService.updateUserIsEmailVerified(request);
   }
 
   @Put('/update/userIsPhoneVerified')
-  public async updateUserIsPhoneVerified(@Body() request: UpdateUserIsPhoneVerifiedRequestDTO) { 
+  public async updateUserIsPhoneVerified(
+    @Body() request: UpdateUserIsPhoneVerifiedRequestDTO,
+  ) {
     return await this.userService.updateUserIsPhoneVerified(request);
   }
 
   @Put('/update/userFollowerCount')
-  public async updateUserFollowerCount(@Body() request: UpdateUserFollowerCountRequestDTO) {
+  public async updateUserFollowerCount(
+    @Body() request: UpdateUserFollowerCountRequestDTO,
+  ) {
     return await this.userService.updateUserFollowerCount(request);
   }
 
   @Put('/update/userFollowingCount')
-  public async updateUserFollowingCount(@Body() request: UpdateUserFollowingCountRequestDTO) {
+  public async updateUserFollowingCount(
+    @Body() request: UpdateUserFollowingCountRequestDTO,
+  ) {
     return await this.userService.updateUserFollowingCount(request);
   }
 
   @Put('/update/userSubscriberCount')
-  public async updateUserSubscriberCount(@Body() request: UpdateUserSubscriberCountRequestDTO) {
+  public async updateUserSubscriberCount(
+    @Body() request: UpdateUserSubscriberCountRequestDTO,
+  ) {
     return await this.userService.updateUserSubscriberCount(request);
   }
 
   @Put('/update/userSubscriptionCount')
-  public async updateUserSubscriptionCount(@Body() request: UpdateUserSubscriptionCountRequestDTO) {
+  public async updateUserSubscriptionCount(
+    @Body() request: UpdateUserSubscriptionCountRequestDTO,
+  ) {
     return await this.userService.updateUserSubscriptionCount(request);
   }
 
   @Put('/update/userTotalExpenditure')
-  public async updateUserTotalExpenditure(@Body() request: UpdateUserTotalExpenditureRequestDTO) {
+  public async updateUserTotalExpenditure(
+    @Body() request: UpdateUserTotalExpenditureRequestDTO,
+  ) {
     return await this.userService.updateUserTotalExpenditure(request);
   }
 
   @Put('/update/userLastLoginDate')
-  public async updateUserLastLoginDate(@Body() request: UpdateUserLastLoginDateRequestDTO) {
+  public async updateUserLastLoginDate(
+    @Body() request: UpdateUserLastLoginDateRequestDTO,
+  ) {
     return await this.userService.updateUserLastLoginDate(request);
   }
 
   @Put('/update/userLastLogoutDate')
-  public async updateUserLastLogoutDate(@Body() request: UpdateUserLastLogoutDateRequestDTO) {
+  public async updateUserLastLogoutDate(
+    @Body() request: UpdateUserLastLogoutDateRequestDTO,
+  ) {
     return await this.userService.updateUserLastLogoutDate(request);
   }
 
   @Put('/update/userVogCount')
-  public async updateUserVogCount(@Body() request: UpdateUserVogCountRequestDTO) {
+  public async updateUserVogCount(
+    @Body() request: UpdateUserVogCountRequestDTO,
+  ) {
     return await this.userService.updateUserVogCount(request);
   }
 
   @Put('/update/userVogLikeCount')
-  public async updateUserVogLikeCount(@Body() request: UpdateUserVogLikeCountRequestDTO) {
+  public async updateUserVogLikeCount(
+    @Body() request: UpdateUserVogLikeCountRequestDTO,
+  ) {
     return await this.userService.updateUserVogLikeCount(request);
   }
 
   @Put('/update/userPostCommentCount')
-  public async updateUserPostCommentCount(@Body() request: UpdateUserPostCommentCountRequestDTO) {
+  public async updateUserPostCommentCount(
+    @Body() request: UpdateUserPostCommentCountRequestDTO,
+  ) {
     return await this.userService.updateUserPostCommentCount(request);
   }
 
   @Put('/update/userFavoriteBusinessCount')
-  public async updateUserFavoriteBusinessCount(@Body() request: UpdateUserFavoriteBusinessCountRequestDTO) {
+  public async updateUserFavoriteBusinessCount(
+    @Body() request: UpdateUserFavoriteBusinessCountRequestDTO,
+  ) {
     return await this.userService.updateUserFavoriteBusinessCount(request);
   }
 
   @Put('/update/userBlogsReadCount')
-  public async updateUserBlogsReadCount(@Body() request: UpdateUserBlogsReadCountRequestDTO) {
+  public async updateUserBlogsReadCount(
+    @Body() request: UpdateUserBlogsReadCountRequestDTO,
+  ) {
     return await this.userService.updateUserBlogsReadCount(request);
   }
 
   @Put('/update/userBlogsLikeCount')
-  public async updateUserBlogsLikeCount(@Body() request: UpdateUserBlogsLikeCountRequestDTO) {
+  public async updateUserBlogsLikeCount(
+    @Body() request: UpdateUserBlogsLikeCountRequestDTO,
+  ) {
     return await this.userService.updateUserBlogsLikeCount(request);
   }
 
   @Get('/find/filter')
-  public async paginate(@Query() request: PaginationQueryDTO){
+  public async paginate(@Query() request: PaginationQueryDTO) {
     return await this.userService.paginate(request);
   }
 
   @Get('/find/preview/filter')
-  public async paginatePreview(@Query() request: PaginationQueryDTO){
+  public async paginatePreview(@Query() request: PaginationQueryDTO) {
     return await this.userService.paginatePreview(request);
   }
 }
